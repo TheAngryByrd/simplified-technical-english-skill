@@ -16,49 +16,49 @@ Each entry names the harness and the model that produced it.
 - [Example 1: Library usage guide (IcedTasks)](#example-1-library-usage-guide-icedtasks)
   - [Claude Code — Claude Fable 5](#claude-code--claude-fable-5-claude-fable-5)
   - [Claude Code — Claude Opus 5](#claude-code--claude-opus-5-1m-context-claude-opus-51m)
-  - [Codex — GPT-5.6](#codex--gpt-56-gpt-56-sol)
+  - [Codex — GPT-5.6 Sol](#codex--gpt-56-sol-gpt-56-sol)
   - [GitHub Copilot CLI — Claude Sonnet 5](#github-copilot-cli--claude-sonnet-5-claude-sonnet-5)
   - [opencode — DeepSeek V4 Flash Free](#opencode--deepseek-v4-flash-free-opencodedeepseek-v4-flash-free)
   - [opencode — nemotron-3-ultra-free](#opencode--nemotron-3-ultra-free-opencodenemotron-3-ultra-free)
 - [Example 2: Procedure (publish a NuGet package)](#example-2-procedure-publish-a-nuget-package)
   - [Claude Code — Claude Fable 5](#claude-code--claude-fable-5-claude-fable-5-1)
   - [Claude Code — Claude Opus 5](#claude-code--claude-opus-5-1m-context-claude-opus-51m-1)
-  - [Codex — GPT-5.6](#codex--gpt-56-gpt-56-sol-1)
+  - [Codex — GPT-5.6 Sol](#codex--gpt-56-sol-gpt-56-sol-1)
   - [GitHub Copilot CLI — Claude Sonnet 5](#github-copilot-cli--claude-sonnet-5-claude-sonnet-5-1)
   - [opencode — DeepSeek V4 Flash Free](#opencode--deepseek-v4-flash-free-opencodedeepseek-v4-flash-free-1)
   - [opencode — nemotron-3-ultra-free](#opencode--nemotron-3-ultra-free-opencodenemotron-3-ultra-free-1)
 - [Example 3: Error message](#example-3-error-message)
   - [Claude Code — Claude Fable 5](#claude-code--claude-fable-5-claude-fable-5-2)
   - [Claude Code — Claude Opus 5](#claude-code--claude-opus-5-1m-context-claude-opus-51m-2)
-  - [Codex — GPT-5.6](#codex--gpt-56-gpt-56-sol-2)
+  - [Codex — GPT-5.6 Sol](#codex--gpt-56-sol-gpt-56-sol-2)
   - [GitHub Copilot CLI — Claude Sonnet 5](#github-copilot-cli--claude-sonnet-5-claude-sonnet-5-2)
   - [opencode — DeepSeek V4 Flash Free](#opencode--deepseek-v4-flash-free-opencodedeepseek-v4-flash-free-2)
   - [opencode — nemotron-3-ultra-free](#opencode--nemotron-3-ultra-free-opencodenemotron-3-ultra-free-2)
 - [Example 4: Code comment](#example-4-code-comment)
   - [Claude Code — Claude Fable 5](#claude-code--claude-fable-5-claude-fable-5-3)
   - [Claude Code — Claude Opus 5](#claude-code--claude-opus-5-1m-context-claude-opus-51m-3)
-  - [Codex — GPT-5.6](#codex--gpt-56-gpt-56-sol-3)
+  - [Codex — GPT-5.6 Sol](#codex--gpt-56-sol-gpt-56-sol-3)
   - [GitHub Copilot CLI — Claude Sonnet 5](#github-copilot-cli--claude-sonnet-5-claude-sonnet-5-3)
   - [opencode — DeepSeek V4 Flash Free](#opencode--deepseek-v4-flash-free-opencodedeepseek-v4-flash-free-3)
   - [opencode — nemotron-3-ultra-free](#opencode--nemotron-3-ultra-free-opencodenemotron-3-ultra-free-3)
 - [Example 5: Destructive command documentation](#example-5-destructive-command-documentation)
   - [Claude Code — Claude Fable 5](#claude-code--claude-fable-5-claude-fable-5-4)
   - [Claude Code — Claude Opus 5](#claude-code--claude-opus-5-1m-context-claude-opus-51m-4)
-  - [Codex — GPT-5.6](#codex--gpt-56-gpt-56-sol-4)
+  - [Codex — GPT-5.6 Sol](#codex--gpt-56-sol-gpt-56-sol-4)
   - [GitHub Copilot CLI — Claude Sonnet 5](#github-copilot-cli--claude-sonnet-5-claude-sonnet-5-4)
   - [opencode — DeepSeek V4 Flash Free](#opencode--deepseek-v4-flash-free-opencodedeepseek-v4-flash-free-4)
   - [opencode — nemotron-3-ultra-free](#opencode--nemotron-3-ultra-free-opencodenemotron-3-ultra-free-4)
 - [Example 6: Changelog entry](#example-6-changelog-entry)
   - [Claude Code — Claude Fable 5](#claude-code--claude-fable-5-claude-fable-5-5)
   - [Claude Code — Claude Opus 5](#claude-code--claude-opus-5-1m-context-claude-opus-51m-5)
-  - [Codex — GPT-5.6](#codex--gpt-56-gpt-56-sol-5)
+  - [Codex — GPT-5.6 Sol](#codex--gpt-56-sol-gpt-56-sol-5)
   - [GitHub Copilot CLI — Claude Sonnet 5](#github-copilot-cli--claude-sonnet-5-claude-sonnet-5-5)
   - [opencode — DeepSeek V4 Flash Free](#opencode--deepseek-v4-flash-free-opencodedeepseek-v4-flash-free-5)
   - [opencode — nemotron-3-ultra-free](#opencode--nemotron-3-ultra-free-opencodenemotron-3-ultra-free-5)
 - [Example 7: Ambiguous reference in a description](#example-7-ambiguous-reference-in-a-description)
   - [Claude Code — Claude Fable 5](#claude-code--claude-fable-5-claude-fable-5-6)
   - [Claude Code — Claude Opus 5](#claude-code--claude-opus-5-1m-context-claude-opus-51m-6)
-  - [Codex — GPT-5.6](#codex--gpt-56-gpt-56-sol-6)
+  - [Codex — GPT-5.6 Sol](#codex--gpt-56-sol-gpt-56-sol-6)
   - [GitHub Copilot CLI — Claude Sonnet 5](#github-copilot-cli--claude-sonnet-5-claude-sonnet-5-6)
   - [opencode — DeepSeek V4 Flash Free](#opencode--deepseek-v4-flash-free-opencodedeepseek-v4-flash-free-6)
   - [opencode — nemotron-3-ultra-free](#opencode--nemotron-3-ultra-free-opencodenemotron-3-ultra-free-6)
@@ -68,7 +68,7 @@ Each entry names the harness and the model that produced it.
 
 - **Claude Code with Claude Fable 5 (`claude-fable-5`)** showed clear improvements in all seven examples. The skill improved sentence length, procedure order, and safety information. The improvements were small when the original text was already effective. One description replaced the precise project term `validates` with less precise wording.
 - **Claude Code with Claude Opus 5 (`claude-opus-5[1m]`)** made large improvements to structure, completeness, and readability. It also corrected incomplete code examples and an incorrect delay list. However, some skill outputs added unsupported facts, omitted a recovery option, or replaced project terms. These results need a human fact check.
-- **Codex with GPT-5.6 (`gpt-5.6-sol`)** produced the most consistent results. The skill preserved facts and project terms and improved structure, direct instructions, and safety labels. The recorded observations identify no regression in its seven skill outputs.
+- **Codex with GPT-5.6 Sol (`gpt-5.6-sol`)** produced the most consistent results. The skill preserved facts and project terms and improved structure, direct instructions, and safety labels. The recorded observations identify no regression in its seven skill outputs.
 - **GitHub Copilot CLI with Claude Sonnet 5 (`claude-sonnet-5`)** produced solid improvements in structure and action order. The skill clarified procedures, error messages, safety information, and ambiguous references. In some examples, it removed a useful code sample or repeated information that the code already showed.
 - **opencode with DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`)** usually improved brevity, procedure structure, and direct instructions. However, some skill outputs removed a recovery option, used an ambiguous pronoun, or added an unsupported reason. The model did not preserve facts consistently.
 - **opencode with nemotron-3-ultra-free (`opencode/nemotron-3-ultra-free`)** improved short error messages, changelog text, and ambiguous references. Its longer outputs were less consistent. It expanded the library guide, put prerequisites after the procedure, and omitted useful details from safety text and a code comment.
@@ -95,9 +95,9 @@ The prompts contain no word limits and no style instructions. Both agents receiv
 
 Both agents had web access. For Example 1, each agent read the IcedTasks repository and the project documentation site.
 
-### Codex with GPT-5.6 (`gpt-5.6-sol`)
+### Codex with GPT-5.6 Sol (`gpt-5.6-sol`)
 
-The Codex entries were recorded on 2026-07-31 with Codex sub-agents and GPT-5.6 (`gpt-5.6-sol`). Two fresh sub-agents received the same prompt:
+The Codex entries were recorded on 2026-07-31 with Codex sub-agents and GPT-5.6 Sol (`gpt-5.6-sol`). Two fresh sub-agents received the same prompt:
 
 - The "before" agent received this added instruction: do not use the `simplified-technical-english` skill or any other skill.
 - The "after" agent received this added instruction: invoke the `simplified-technical-english` skill first and follow its guidance.
@@ -571,7 +571,7 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - Contractions were removed: "it's", "does not" replaces "doesn't".
 - The "after" text is longer than the "before" text. One statement for each action increased the length, and the "after" text adds a builder table plus five separate examples.
 
-### Codex — GPT-5.6 (`gpt-5.6-sol`)
+### Codex — GPT-5.6 Sol (`gpt-5.6-sol`)
 
 ##### Before
 
@@ -1336,7 +1336,7 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - The step count increased from 10 to 15, because one instruction for each step splits the combined steps.
 - One regression: the "after" text adds a claim the prompt did not supply, that NuGet.org reserves the package ID after the first push. A human editor must verify this statement.
 
-### Codex — GPT-5.6 (`gpt-5.6-sol`)
+### Codex — GPT-5.6 Sol (`gpt-5.6-sol`)
 
 ##### Before
 
@@ -1568,7 +1568,7 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - The "before" text uses the vague pronoun "it" for the file in "because it contains invalid JSON". The "after" text names the file.
 - One regression: the "after" text drops the second recovery action. A user who cannot repair the JSON gets no instruction. A human editor can add one sentence that tells the user to delete the file.
 
-### Codex — GPT-5.6 (`gpt-5.6-sol`)
+### Codex — GPT-5.6 Sol (`gpt-5.6-sol`)
 
 ##### Before
 
@@ -1711,7 +1711,7 @@ for (var attempt = 0; attempt < 5; attempt++)
 - The "before" comment gives an incorrect list of delay values. The loop makes five delays of 1, 2, 4, 8, and 16 seconds, and the comment names only four. The "after" comment does not repeat the values, so it cannot disagree with the code.
 - Both versions use the same removal instruction.
 
-### Codex — GPT-5.6 (`gpt-5.6-sol`)
+### Codex — GPT-5.6 Sol (`gpt-5.6-sol`)
 
 ##### Before
 
@@ -1922,7 +1922,7 @@ for (var attempt = 0; attempt < 5; attempt++)
 - The "after" text labels the code block with a language (`text`) and puts it under a "Usage" heading.
 - The change in this example is small, because the "before" text is already short. The label, the subject, and the order carry the difference.
 
-### Codex — GPT-5.6 (`gpt-5.6-sol`)
+### Codex — GPT-5.6 Sol (`gpt-5.6-sol`)
 
 ##### Before
 
@@ -2133,7 +2133,7 @@ for (var attempt = 0; attempt < 5; attempt++)
 - The "after" text adds the article "The" to both subjects.
 - The change is small, because the prompt already supplied the exact facts and the correct numbers. Select this example only when you want to show a case of modest change.
 
-### Codex — GPT-5.6 (`gpt-5.6-sol`)
+### Codex — GPT-5.6 Sol (`gpt-5.6-sol`)
 
 ##### Before
 
@@ -2255,7 +2255,7 @@ for (var attempt = 0; attempt < 5; attempt++)
 - One regression: the "after" text adds a condition the prompt did not state, "If the request is valid". A human editor must remove it.
 - One regression: the "after" text replaces the project term "logs" with "writes a record of" and "These records". A human editor can keep "logs" as the project term.
 
-### Codex — GPT-5.6 (`gpt-5.6-sol`)
+### Codex — GPT-5.6 Sol (`gpt-5.6-sol`)
 
 ##### Before
 
