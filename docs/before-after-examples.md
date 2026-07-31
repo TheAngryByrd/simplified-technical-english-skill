@@ -9,7 +9,73 @@ Each example shows two recorded answers to the same prompt:
 
 Each entry names the harness and the model that produced it.
 
-## How the Claude Code entries were recorded
+## Contents
+
+- [Summary of harness and model performance](#summary-of-harness-and-model-performance)
+- [How entries were recorded](#how-entries-were-recorded)
+- [Example 1: Library usage guide (IcedTasks)](#example-1-library-usage-guide-icedtasks)
+  - [Claude Code — Claude Fable 5](#claude-code--claude-fable-5-claude-fable-5)
+  - [Claude Code — Claude Opus 5](#claude-code--claude-opus-5-1m-context-claude-opus-51m)
+  - [Codex — GPT-5.6](#codex--gpt-56-gpt-56-sol)
+  - [GitHub Copilot CLI — Claude Sonnet 5](#github-copilot-cli--claude-sonnet-5-claude-sonnet-5)
+  - [opencode — DeepSeek V4 Flash Free](#opencode--deepseek-v4-flash-free-opencodedeepseek-v4-flash-free)
+  - [opencode — nemotron-3-ultra-free](#opencode--nemotron-3-ultra-free-opencodenemotron-3-ultra-free)
+- [Example 2: Procedure (publish a NuGet package)](#example-2-procedure-publish-a-nuget-package)
+  - [Claude Code — Claude Fable 5](#claude-code--claude-fable-5-claude-fable-5-1)
+  - [Claude Code — Claude Opus 5](#claude-code--claude-opus-5-1m-context-claude-opus-51m-1)
+  - [Codex — GPT-5.6](#codex--gpt-56-gpt-56-sol-1)
+  - [GitHub Copilot CLI — Claude Sonnet 5](#github-copilot-cli--claude-sonnet-5-claude-sonnet-5-1)
+  - [opencode — DeepSeek V4 Flash Free](#opencode--deepseek-v4-flash-free-opencodedeepseek-v4-flash-free-1)
+  - [opencode — nemotron-3-ultra-free](#opencode--nemotron-3-ultra-free-opencodenemotron-3-ultra-free-1)
+- [Example 3: Error message](#example-3-error-message)
+  - [Claude Code — Claude Fable 5](#claude-code--claude-fable-5-claude-fable-5-2)
+  - [Claude Code — Claude Opus 5](#claude-code--claude-opus-5-1m-context-claude-opus-51m-2)
+  - [Codex — GPT-5.6](#codex--gpt-56-gpt-56-sol-2)
+  - [GitHub Copilot CLI — Claude Sonnet 5](#github-copilot-cli--claude-sonnet-5-claude-sonnet-5-2)
+  - [opencode — DeepSeek V4 Flash Free](#opencode--deepseek-v4-flash-free-opencodedeepseek-v4-flash-free-2)
+  - [opencode — nemotron-3-ultra-free](#opencode--nemotron-3-ultra-free-opencodenemotron-3-ultra-free-2)
+- [Example 4: Code comment](#example-4-code-comment)
+  - [Claude Code — Claude Fable 5](#claude-code--claude-fable-5-claude-fable-5-3)
+  - [Claude Code — Claude Opus 5](#claude-code--claude-opus-5-1m-context-claude-opus-51m-3)
+  - [Codex — GPT-5.6](#codex--gpt-56-gpt-56-sol-3)
+  - [GitHub Copilot CLI — Claude Sonnet 5](#github-copilot-cli--claude-sonnet-5-claude-sonnet-5-3)
+  - [opencode — DeepSeek V4 Flash Free](#opencode--deepseek-v4-flash-free-opencodedeepseek-v4-flash-free-3)
+  - [opencode — nemotron-3-ultra-free](#opencode--nemotron-3-ultra-free-opencodenemotron-3-ultra-free-3)
+- [Example 5: Destructive command documentation](#example-5-destructive-command-documentation)
+  - [Claude Code — Claude Fable 5](#claude-code--claude-fable-5-claude-fable-5-4)
+  - [Claude Code — Claude Opus 5](#claude-code--claude-opus-5-1m-context-claude-opus-51m-4)
+  - [Codex — GPT-5.6](#codex--gpt-56-gpt-56-sol-4)
+  - [GitHub Copilot CLI — Claude Sonnet 5](#github-copilot-cli--claude-sonnet-5-claude-sonnet-5-4)
+  - [opencode — DeepSeek V4 Flash Free](#opencode--deepseek-v4-flash-free-opencodedeepseek-v4-flash-free-4)
+  - [opencode — nemotron-3-ultra-free](#opencode--nemotron-3-ultra-free-opencodenemotron-3-ultra-free-4)
+- [Example 6: Changelog entry](#example-6-changelog-entry)
+  - [Claude Code — Claude Fable 5](#claude-code--claude-fable-5-claude-fable-5-5)
+  - [Claude Code — Claude Opus 5](#claude-code--claude-opus-5-1m-context-claude-opus-51m-5)
+  - [Codex — GPT-5.6](#codex--gpt-56-gpt-56-sol-5)
+  - [GitHub Copilot CLI — Claude Sonnet 5](#github-copilot-cli--claude-sonnet-5-claude-sonnet-5-5)
+  - [opencode — DeepSeek V4 Flash Free](#opencode--deepseek-v4-flash-free-opencodedeepseek-v4-flash-free-5)
+  - [opencode — nemotron-3-ultra-free](#opencode--nemotron-3-ultra-free-opencodenemotron-3-ultra-free-5)
+- [Example 7: Ambiguous reference in a description](#example-7-ambiguous-reference-in-a-description)
+  - [Claude Code — Claude Fable 5](#claude-code--claude-fable-5-claude-fable-5-6)
+  - [Claude Code — Claude Opus 5](#claude-code--claude-opus-5-1m-context-claude-opus-51m-6)
+  - [Codex — GPT-5.6](#codex--gpt-56-gpt-56-sol-6)
+  - [GitHub Copilot CLI — Claude Sonnet 5](#github-copilot-cli--claude-sonnet-5-claude-sonnet-5-6)
+  - [opencode — DeepSeek V4 Flash Free](#opencode--deepseek-v4-flash-free-opencodedeepseek-v4-flash-free-6)
+  - [opencode — nemotron-3-ultra-free](#opencode--nemotron-3-ultra-free-opencodenemotron-3-ultra-free-6)
+
+
+## Summary of harness and model performance
+
+- **Claude Code with Claude Fable 5 (`claude-fable-5`)** showed clear improvements in all seven examples. The skill improved sentence length, procedure order, and safety information. The improvements were small when the original text was already effective. One description replaced the precise project term `validates` with less precise wording.
+- **Claude Code with Claude Opus 5 (`claude-opus-5[1m]`)** made large improvements to structure, completeness, and readability. It also corrected incomplete code examples and an incorrect delay list. However, some skill outputs added unsupported facts, omitted a recovery option, or replaced project terms. These results need a human fact check.
+- **Codex with GPT-5.6 (`gpt-5.6-sol`)** produced the most consistent results. The skill preserved facts and project terms and improved structure, direct instructions, and safety labels. The recorded observations identify no regression in its seven skill outputs.
+- **GitHub Copilot CLI with Claude Sonnet 5 (`claude-sonnet-5`)** produced solid improvements in structure and action order. The skill clarified procedures, error messages, safety information, and ambiguous references. In some examples, it removed a useful code sample or repeated information that the code already showed.
+- **opencode with DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`)** usually improved brevity, procedure structure, and direct instructions. However, some skill outputs removed a recovery option, used an ambiguous pronoun, or added an unsupported reason. The model did not preserve facts consistently.
+- **opencode with nemotron-3-ultra-free (`opencode/nemotron-3-ultra-free`)** improved short error messages, changelog text, and ambiguous references. Its longer outputs were less consistent. It expanded the library guide, put prerequisites after the procedure, and omitted useful details from safety text and a code comment.
+
+## How entries were recorded
+
+### Claude Code with Claude Fable 5 (`claude-fable-5`)
 
 The Claude Code entries were recorded on 2026-07-31 with Claude Fable 5 (`claude-fable-5`). Two fresh subagents received the same prompt:
 
@@ -18,7 +84,7 @@ The Claude Code entries were recorded on 2026-07-31 with Claude Fable 5 (`claude
 
 The prompts contain no word limits and no style instructions. Both agents received the same instruction to return only the requested text.
 
-## How the Claude Code (Opus 5) entries were recorded
+### Claude Code with Claude Opus 5 (`claude-opus-5[1m]`)
 
 The Claude Code Opus 5 entries were recorded on 2026-07-31 with the `general-purpose` sub-agent and Claude Opus 5 with the 1M-token context (`claude-opus-5[1m]`). Two fresh sub-agents received the same prompt:
 
@@ -29,7 +95,7 @@ The prompts contain no word limits and no style instructions. Both agents receiv
 
 Both agents had web access. For Example 1, each agent read the IcedTasks repository and the project documentation site.
 
-## How the Codex entries were recorded
+### Codex with GPT-5.6 (`gpt-5.6-sol`)
 
 The Codex entries were recorded on 2026-07-31 with Codex sub-agents and GPT-5.6 (`gpt-5.6-sol`). Two fresh sub-agents received the same prompt:
 
@@ -38,7 +104,7 @@ The Codex entries were recorded on 2026-07-31 with Codex sub-agents and GPT-5.6 
 
 The prompts contain no word limits and no style instructions. Both agents received the same instruction to return only the requested text and not edit files.
 
-## How the GitHub Copilot CLI entries were recorded
+### GitHub Copilot CLI with Claude Sonnet 5 (`claude-sonnet-5`)
 
 The GitHub Copilot CLI entries were recorded on 2026-07-31 with the `general-purpose` sub-agent and Claude Sonnet 5 (`claude-sonnet-5`). Two fresh sub-agents received the same prompt:
 
@@ -47,7 +113,7 @@ The GitHub Copilot CLI entries were recorded on 2026-07-31 with the `general-pur
 
 The prompts contain no word limits and no style instructions. Both agents received the same instruction to return only the requested text.
 
-## How the opencode entries were recorded
+### opencode with DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`)
 
 The opencode entries were recorded on 2026-07-31 with the `general` sub-agent and DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`). Two fresh sub-agents received the same prompt:
 
@@ -56,7 +122,11 @@ The opencode entries were recorded on 2026-07-31 with the `general` sub-agent an
 
 The prompts contain no word limits and no style instructions. Both agents received the same instruction to return only the requested text.
 
-## How to add an entry for another model
+### opencode with nemotron-3-ultra-free (`opencode/nemotron-3-ultra-free`)
+
+This file contains the nemotron entries, but it does not record their harness configuration or prompt instructions.
+
+### How to add an entry for another model
 
 1. Copy the "Other models" template in the example.
 2. Send the prompt to the model without the skill. Record the output as the "before" text.
