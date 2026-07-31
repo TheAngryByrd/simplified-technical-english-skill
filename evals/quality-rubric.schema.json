@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "overall_pass": { "type": "boolean" },
+    "score": { "type": "integer", "minimum": 0, "maximum": 100 },
+    "checks": {
+      "type": "object",
+      "properties": {
+        "meaning": { "$ref": "#/$defs/check" },
+        "classification": { "$ref": "#/$defs/check" },
+        "terms": { "$ref": "#/$defs/check" },
+        "structure": { "$ref": "#/$defs/check" },
+        "language": { "$ref": "#/$defs/check" }
+      },
+      "required": ["meaning", "classification", "terms", "structure", "language"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["overall_pass", "score", "checks"],
+  "additionalProperties": false,
+  "$defs": {
+    "check": {
+      "type": "object",
+      "properties": {
+        "pass": { "type": "boolean" },
+        "notes": { "type": "string" }
+      },
+      "required": ["pass", "notes"],
+      "additionalProperties": false
+    }
+  }
+}

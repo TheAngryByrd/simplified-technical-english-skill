@@ -1,0 +1,11 @@
+id,should_trigger,text_type,max_words,required_terms,prompt
+explicit-procedure,true,procedure,20,file|upload,"Use the $simplified-technical-english skill. Rewrite this procedure. Return only the revised text: The operator should then make a selection of the correct file and after that they can click the button in order to commence the upload process."
+implicit-procedure,true,procedure,20,filter|pump,"Rewrite this maintenance procedure as clear technical instructions. Return only the revised text: After the filter has been removed by the technician, they should make an inspection of it and then the pump can be started again."
+explicit-description,true,description,25,controller|temperature,"Use $simplified-technical-english to rewrite this description. Return only the revised text: The controller is an item that is used for the regulation of temperature and it also provides the operator with information about faults."
+implicit-review,true,description,25,server|request,"Review and rewrite this technical description for consistent terms and unambiguous references. Return only the revised text: The server sends the request to the gateway after it validates it, and this records the response."
+error-message,true,description,25,config.json,"Use $simplified-technical-english to rewrite this software error. Preserve the filename. Return only the revised error: Something went wrong with config.json."
+safety-warning,true,safety,20,48 V|J7,"Use $simplified-technical-english to rewrite this warning. Preserve the values. Return only the revised warning: Before touching connector J7 you should switch off the 48 V supply because otherwise you might receive an electric shock."
+technical-note,true,note,25,cache|restart,"Use $simplified-technical-english to rewrite this note as information only. Preserve both terms. Return only the revised note: Note: You should clear the cache after a restart."
+code-comment,true,description,25,retry|429,"Use $simplified-technical-english to rewrite this code comment. Preserve the terms. Return only the revised comment: // This retries because it got a 429 and we don't want it to fail."
+negative-fiction,false,none,0,,"Write a four-line fantasy poem about a moonlit lake. Return only the poem."
+negative-translation,false,none,0,,"Translate 'Good morning' into French. Return only the translation."

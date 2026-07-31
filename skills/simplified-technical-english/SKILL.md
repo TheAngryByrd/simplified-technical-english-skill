@@ -1,6 +1,6 @@
 ---
 name: simplified-technical-english
-description: Write and review technical text with project-aware ASD-STE100 Issue 9 guidance. Use for documentation, code comments, procedures, messages, and controlled-language reviews.
+description: Write and review technical text with project-aware ASD-STE100 Issue 9 guidance. Use for technical documentation, code comments, procedures, software text, safety instructions, and controlled-language reviews. Do not use for creative writing, casual conversation, or general translation.
 ---
 
 # Simplified Technical English

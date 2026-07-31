@@ -157,6 +157,56 @@ The output includes `simplified-technical-english`.
 
 If the harness does not detect the skill automatically, start a new session.
 
+## Evaluate the skill
+
+The eval suite tests skill activation and technical text quality.
+
+The suite requires an authenticated `codex` command and Node.js 18 or newer.
+
+Run the unit tests:
+
+```text
+node --test evals/eval-utils.test.mjs
+```
+
+Run one eval case without rubric grading:
+
+```text
+node evals/run-evals.mjs --case explicit-procedure --skip-rubric
+```
+
+Run all eval cases with rubric grading:
+
+```text
+node evals/run-evals.mjs
+```
+
+Run one case with a specific model:
+
+```text
+node evals/run-evals.mjs --case explicit-procedure --model <model>
+```
+
+Negative controls test activation only.
+
+The runner does not send negative controls to the rubric grader.
+
+The runner creates an isolated Git repository for each case.
+
+The runner installs the current skill in each isolated repository.
+
+The workspace instructions tell Codex to ignore global skill-selection rules.
+
+These instructions reduce interference but do not isolate Codex from all global instructions.
+
+The activation check finds a `SKILL.md` read command in the JSONL trace.
+
+Current Codex JSONL events do not include a separate skill activation event.
+
+The runner saves JSONL traces, grader output, and a summary in `evals/artifacts`.
+
+The process exits with code 1 when a deterministic check or rubric check fails.
+
 ## Optional: provide the specification
 
 The skill does not require the PDF for routine writing and review.
