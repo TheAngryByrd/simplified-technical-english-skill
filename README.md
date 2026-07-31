@@ -15,6 +15,22 @@ It supports these text types:
 - Descriptions
 - Safety instructions
 
+## Why this skill is useful
+
+Technical content can be accurate and still be difficult to follow. This skill gives agents a repeatable process for writing clearer text.
+
+The skill helps teams:
+
+- Put conditions and prerequisites before dependent actions.
+- Use one consistent term for each concept.
+- Separate instructions, descriptions, notes, and safety information.
+- Keep procedures and descriptions within defined sentence limits.
+- Preserve project terms, identifiers, measurements, and safety limits.
+- Write comments that explain rules and non-obvious constraints.
+- Check exact rules and dictionary entries without loading the complete PDF.
+
+These checks help readers identify the actor, action, object, condition, and expected result.
+
 ## Repository structure
 
 The installable skill is in [`skills/simplified-technical-english`](skills/simplified-technical-english).
