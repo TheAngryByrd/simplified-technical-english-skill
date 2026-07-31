@@ -249,6 +249,258 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - The "when useful" list became direct instructions with the pattern "Use X when you must Y".
 - The setup became a numbered procedure.
 
+### Claude Code — Claude Opus 5 (1M context) (`claude-opus-5[1m]`)
+
+#### Before
+
+> # IcedTasks
+>
+> IcedTasks is an F# library by Jimmy Byrd that adds extra computation expressions (CEs) beyond the built-in `task`, built on the resumable-code feature added in F# 6. The headline features are *cold* tasks and *cancellable* tasks.
+>
+> ## Installation
+>
+> ```
+> dotnet add package IcedTasks
+> ```
+>
+> Then open the namespace:
+>
+> ```fsharp
+> open IcedTasks
+> ```
+>
+> ## What it gives you
+>
+> | Type | Builders | What it's for |
+> |---|---|---|
+> | `ValueTask<'T>` | `valueTask`, `valueTaskUnit`, `poolingValueTask` | Lower allocation on paths that often complete synchronously |
+> | `ColdTask<'T>` = `unit -> Task<'T>` | `coldTask` | Lazy start, like `Async` |
+> | `CancellableTask<'T>` = `CancellationToken -> Task<'T>` | `cancellableTask`, `backgroundCancellableTask` | Lazy start plus a cancellation token threaded implicitly through the whole computation |
+> | `CancellableValueTask<'T>` | `cancellableValueTask`, `cancellablePoolingValueTask` | Same, over `ValueTask` |
+> | `ParallelAsync<'T>` | `parallelAsync` | `and!` applicative syntax to run `Async` values in parallel |
+> | `AsyncEx<'T>` | `asyncEx` (or shadow `async` via `IcedTasks.Polyfill.Async`) | `Async` with fixed semantics |
+> | `Task<'T>` | `task`, `backgroundTask` via `IcedTasks.Polyfill.Task` | Polyfill for fixes to the built-in `task` CE |
+> | `Task` | `taskUnit`, `backgroundTaskUnit` | Unit-returning tasks without `:> Task` casting |
+>
+> ## Cold tasks
+>
+> A normal `task { }` is *hot*: it starts running the moment you create it. A `coldTask` does not run until you apply it:
+>
+> ```fsharp
+> let mutable someValue = null
+>
+> let fooColdTask = coldTask { someValue <- 42 }
+> do! Async.Sleep 100
+> // still null - nothing has run
+> do! fooColdTask ()   // now it runs
+> // someValue = 42
+> ```
+>
+> This restores the `Async`-style "description of work" model while keeping task performance and task interop.
+>
+> ## Cancellable tasks (the main event)
+>
+> `CancellableTask<'T>` is `CancellationToken -> Task<'T>`. The token is threaded implicitly through every bind, and cancellation is checked before each bind, so you get `Async`-like cancellation without hand-plumbing `ct` into every call.
+>
+> ```fsharp
+> let writeJunkToFile (path: string) = cancellableTask {
+>     let junk = Array.zeroCreate<byte> 1000
+>     use file = IO.File.Create path
+>
+>     // Option 1: bind a CancellationToken -> Task<_> function (slightly faster)
+>     do! fun ct -> file.WriteAsync(junk, 0, junk.Length, ct)
+>
+>     // Option 2: fetch the ambient token explicitly
+>     let! ct = CancellableTask.getCancellationToken ()
+>     do! file.FlushAsync ct
+> }
+> ```
+>
+> Run it by supplying a token:
+>
+> ```fsharp
+> let cts = new CancellationTokenSource()
+> do! writeJunkToFile "junk.txt" cts.Token
+> ```
+>
+> In ASP.NET, pass `httpContext.RequestAborted`. `cancellableValueTask` is a drop-in swap anywhere `cancellableTask` appears. The `CancellableTask` module adds helpers: `singleton`, sequential and concurrent pair combinators, `whenAll`, and `whenAllThrottled` with a `maxDegreeOfParallelism`. Tail-recursive `let rec` inside the CE is supported, and nesting a `cancellableTask` inside `async` propagates the token.
+>
+> ## AsyncEx
+>
+> `asyncEx` is `Async` with several behaviour differences that usually match what people expect:
+>
+> - `use` works with `IAsyncDisposable`
+> - `let!` / `do!` accept `Task`, `ValueTask`, and any awaitable directly
+> - exceptions are unwrapped, so you catch `ArgumentException` instead of `AggregateException`
+> - `for` supports `IAsyncEnumerable`
+>
+> Open `IcedTasks.Polyfill.Async` to have plain `async { }` mean `asyncEx`.
+>
+> ## parallelAsync
+>
+> ```fsharp
+> let getDataFromAFewSites = parallelAsync {
+>     let! result1 = exampleHttpCall "howManyPlantsDoIOwn"
+>     and! result2 = exampleHttpCall "whatsTheTemperature"
+>     and! result3 = exampleHttpCall "whereIsMyPhone"
+>     return ()
+> }
+> ```
+>
+> ## When it's most useful
+>
+> - **You use `task` but keep losing cancellation.** This is the strongest case. Any codebase where `CancellationToken` has to be passed manually down long call chains — web APIs, background workers, CLI tools with Ctrl+C handling — gets materially cleaner with `cancellableTask`.
+> - **You are migrating from `Async` to `Task` for performance** and miss the cold, cancellation-aware semantics. `coldTask` and `cancellableTask` bridge that gap.
+> - **Hot-path async code that usually completes synchronously** (cache hits, buffered reads). `valueTask` / `poolingValueTask` and the `cancellablePoolingValueTask` variants cut allocations. The performance claims in the README are qualitative; benchmark your own workload.
+> - **You keep hitting the sharp edges of `Async`** — `AggregateException` wrapping, no `IAsyncDisposable`, awkward `Task` interop. Use `asyncEx`.
+> - **You want fan-out with clean syntax** — `parallelAsync` with `and!`, or `CancellableTask.whenAllThrottled` when you need a concurrency cap.
+>
+> When it is *not* worth it: simple hot fire-and-forget work with no cancellation story, or a codebase that already threads tokens explicitly and is happy doing so. The cost of adopting IcedTasks is one dependency plus the learning curve of which builder to reach for.
+>
+> Full docs, including a "Choosing a builder" comparison page and how-to guides for ASP.NET Minimal API, Falco, Giraffe, and console apps, are at the project site.
+>
+> Sources: [github.com/TheAngryByrd/IcedTasks](https://github.com/TheAngryByrd/IcedTasks), [jimmybyrd.me/IcedTasks](https://www.jimmybyrd.me/IcedTasks/), [NuGet: IcedTasks](https://www.nuget.org/packages/IcedTasks)
+
+#### After
+
+> # IcedTasks
+>
+> IcedTasks is an F# library. It adds computation expressions that the built-in `task` computation expression does not supply. The library is built on the resumable code feature of F# 6.0.
+>
+> ## Installation
+>
+> Add the `IcedTasks` NuGet package to your project.
+>
+> ```sh
+> dotnet add package IcedTasks
+> ```
+>
+> Then open the namespace in each file that uses a builder.
+>
+> ```fsharp
+> open IcedTasks
+> ```
+>
+> ## Basic use
+>
+> Each computation expression works like the F# `task` computation expression. Write `let!` to bind an asynchronous result. Write `and!` to start independent operations together. Write `return` to produce the result.
+>
+> ```fsharp
+> open IcedTasks
+>
+> let getAnswer () =
+>     valueTask { return 42 }
+> ```
+>
+> ## Cancellation with cancellableTask
+>
+> `cancellableTask` is the most common reason to use the library. A `CancellableTask<'T>` is a function of this shape:
+>
+> ```fsharp
+> CancellationToken -> Task<'T>
+> ```
+>
+> The work does not start until the caller supplies a token. The builder then carries the token through the complete computation and checks cancellation before each bind.
+>
+> To write a cancellable operation, do not add a token parameter to the function signature. Get the ambient token inside the computation expression instead.
+>
+> ```fsharp
+> open System.Threading.Tasks
+> open IcedTasks
+>
+> let loadCustomer customerId =
+>     cancellableTask {
+>         let! cancellationToken = CancellableTask.getCancellationToken ()
+>         do! Task.Delay(10, cancellationToken)
+>         return {| Id = customerId; Name = "Ada" |}
+>     }
+> ```
+>
+> You can also bind a function that receives the token. This form is faster.
+>
+> ```fsharp
+> let loadOpenOrders () =
+>     cancellableTask { do! fun cancellationToken -> Task.Delay(10, cancellationToken) }
+> ```
+>
+> To start the operation, call it with a token at the application boundary. In an ASP.NET Core application, use `HttpContext.RequestAborted`. In a console application or a test, create a `CancellationTokenSource`.
+>
+> ```fsharp
+> open System
+> open System.Threading
+>
+> let run () =
+>     task {
+>         use cancellation = new CancellationTokenSource(TimeSpan.FromSeconds 2.0)
+>         let! customer = loadCustomer 42 cancellation.Token
+>         return customer
+>     }
+> ```
+>
+> ## Parallel operations with parallelAsync
+>
+> `parallelAsync` runs multiple `Async<'T>` operations at the same time. Use `and!` for each operation that does not need the result of another operation.
+>
+> ```fsharp
+> let getData =
+>     parallelAsync {
+>         let! plants = exampleHttpCall "howManyPlantsDoIOwn"
+>         and! temperature = exampleHttpCall "whatsTheTemperature"
+>         return plants, temperature
+>     }
+> ```
+>
+> ## Available builders
+>
+> | Builder | Result shape |
+> | --- | --- |
+> | `task`, `backgroundTask`, `taskUnit`, `backgroundTaskUnit` | `Task<'T>` or `Task` |
+> | `valueTask`, `vTask`, `valueTaskUnit`, `vTaskUnit` | `ValueTask<'T>` or `ValueTask` |
+> | `poolingValueTask`, `pvTask` | `ValueTask<'T>`, .NET 6.0 or later |
+> | `coldTask`, `backgroundColdTask` | `unit -> Task<'T>` |
+> | `cancellableTask`, `backgroundCancellableTask` | `CancellationToken -> Task<'T>` |
+> | `cancellableValueTask`, `cancellablePoolingValueTask` | `CancellationToken -> ValueTask<'T>` |
+> | `asyncEx` | `Async<'T>` |
+> | `parallelAsync` | `Async<'T>` |
+>
+> The `background` builders move the continuation to the thread pool. They have the same purpose as `ConfigureAwait(false)`. Use a `background` builder when the continuation must not stay on the current synchronization context.
+>
+> The `IcedTasks.Polyfill.Task` and `IcedTasks.Polyfill.Async` namespaces shadow the F# `task` and `async` computation expressions with the improved versions. Open a polyfill namespace when you want the improved behavior without a change to your existing code.
+>
+> ## When the library is most useful
+>
+> Select a builder by the shape of the operation, not by speed.
+>
+> - The work is asynchronous and task-shaped: use `task`.
+> - The work can complete synchronously, and you want to avoid an allocation in that case: use `valueTask`.
+> - Cancellation is part of the API contract: use `cancellableTask` or `cancellableValueTask`.
+> - The work must not start until the caller invokes it, and cancellation is not necessary: use `coldTask`.
+> - The operation belongs to the F# `Async` world, but it must interoperate with `Task`, `ValueTask`, `IAsyncDisposable`, or `IAsyncEnumerable`: use `asyncEx`.
+> - Multiple `Async` operations must run in parallel with `and!`: use `parallelAsync`.
+> - Allocation is critical, and the shape is already a `ValueTask`: measure first, then consider a pooling builder.
+>
+> The library gives the largest benefit in these conditions:
+>
+> - A server application must stop work when the client cancels the request. `cancellableTask` removes the token parameter from each function signature and stops the work at the next bind.
+> - A deep call chain must pass a `CancellationToken` through many functions. The implicit token removes this repeated parameter.
+> - An operation must be repeatable. A cold builder or a cancellable builder produces a function, so the caller can start the same value more than once.
+> - An asynchronous method completes synchronously in most calls. `valueTask` prevents a `Task<'T>` allocation in that case.
+> - F# `Async` code must call modern .NET asynchronous APIs. `asyncEx` supplies the necessary bind overloads.
+>
+> The library gives little benefit when the built-in `task` computation expression is sufficient. If your code does not need cancellation, cold execution, `ValueTask` results, applicative `and!`, or extended .NET interoperability, continue to use `task`.
+
+#### Observed differences
+
+- Evaluative asides were removed: "The headline features", "the main event", "This is the strongest case", "the sharp edges of `Async`", "gets materially cleaner".
+- The "before" text titles a section "Cancellable tasks (the main event)". The "after" text names the builder: "Cancellation with cancellableTask".
+- The "after" text gives complete examples with the necessary `open` statements and a named function. The "before" text gives fragments that use `do!` outside a computation expression and depend on undeclared names.
+- The "when useful" list became one condition for each builder, under a single selection rule: "Select a builder by the shape of the operation, not by speed."
+- The "before" text uses em-dash asides to hold three examples inside one sentence ("web APIs, background workers, CLI tools with Ctrl+C handling"). The "after" text uses one statement for each condition.
+- The "after" text explains what the `background` builders do. The "before" text lists `backgroundTask` and `backgroundCancellableTask` in a table but does not explain them.
+- The "before" text closes with an open-ended judgement ("When it is *not* worth it..."). The "after" text closes with a plain condition and a direct instruction: "continue to use `task`".
+- Contractions were removed: "it's", "does not" replaces "doesn't".
+- The "after" text is longer than the "before" text. One statement for each action increased the length, and the "after" text adds a builder table plus five separate examples.
+
 ### Codex — GPT-5.6 (`gpt-5.6-sol`)
 
 ##### Before
@@ -792,258 +1044,6 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - The "after" text removes contractions ("doesn't", "can't") and uses more formal phrasing throughout.
 - The "after" text includes a link to the full documentation site at the end.
 
-### Claude Code — Claude Opus 5 (1M context) (`claude-opus-5[1m]`)
-
-#### Before
-
-> # IcedTasks
->
-> IcedTasks is an F# library by Jimmy Byrd that adds extra computation expressions (CEs) beyond the built-in `task`, built on the resumable-code feature added in F# 6. The headline features are *cold* tasks and *cancellable* tasks.
->
-> ## Installation
->
-> ```
-> dotnet add package IcedTasks
-> ```
->
-> Then open the namespace:
->
-> ```fsharp
-> open IcedTasks
-> ```
->
-> ## What it gives you
->
-> | Type | Builders | What it's for |
-> |---|---|---|
-> | `ValueTask<'T>` | `valueTask`, `valueTaskUnit`, `poolingValueTask` | Lower allocation on paths that often complete synchronously |
-> | `ColdTask<'T>` = `unit -> Task<'T>` | `coldTask` | Lazy start, like `Async` |
-> | `CancellableTask<'T>` = `CancellationToken -> Task<'T>` | `cancellableTask`, `backgroundCancellableTask` | Lazy start plus a cancellation token threaded implicitly through the whole computation |
-> | `CancellableValueTask<'T>` | `cancellableValueTask`, `cancellablePoolingValueTask` | Same, over `ValueTask` |
-> | `ParallelAsync<'T>` | `parallelAsync` | `and!` applicative syntax to run `Async` values in parallel |
-> | `AsyncEx<'T>` | `asyncEx` (or shadow `async` via `IcedTasks.Polyfill.Async`) | `Async` with fixed semantics |
-> | `Task<'T>` | `task`, `backgroundTask` via `IcedTasks.Polyfill.Task` | Polyfill for fixes to the built-in `task` CE |
-> | `Task` | `taskUnit`, `backgroundTaskUnit` | Unit-returning tasks without `:> Task` casting |
->
-> ## Cold tasks
->
-> A normal `task { }` is *hot*: it starts running the moment you create it. A `coldTask` does not run until you apply it:
->
-> ```fsharp
-> let mutable someValue = null
->
-> let fooColdTask = coldTask { someValue <- 42 }
-> do! Async.Sleep 100
-> // still null - nothing has run
-> do! fooColdTask ()   // now it runs
-> // someValue = 42
-> ```
->
-> This restores the `Async`-style "description of work" model while keeping task performance and task interop.
->
-> ## Cancellable tasks (the main event)
->
-> `CancellableTask<'T>` is `CancellationToken -> Task<'T>`. The token is threaded implicitly through every bind, and cancellation is checked before each bind, so you get `Async`-like cancellation without hand-plumbing `ct` into every call.
->
-> ```fsharp
-> let writeJunkToFile (path: string) = cancellableTask {
->     let junk = Array.zeroCreate<byte> 1000
->     use file = IO.File.Create path
->
->     // Option 1: bind a CancellationToken -> Task<_> function (slightly faster)
->     do! fun ct -> file.WriteAsync(junk, 0, junk.Length, ct)
->
->     // Option 2: fetch the ambient token explicitly
->     let! ct = CancellableTask.getCancellationToken ()
->     do! file.FlushAsync ct
-> }
-> ```
->
-> Run it by supplying a token:
->
-> ```fsharp
-> let cts = new CancellationTokenSource()
-> do! writeJunkToFile "junk.txt" cts.Token
-> ```
->
-> In ASP.NET, pass `httpContext.RequestAborted`. `cancellableValueTask` is a drop-in swap anywhere `cancellableTask` appears. The `CancellableTask` module adds helpers: `singleton`, sequential and concurrent pair combinators, `whenAll`, and `whenAllThrottled` with a `maxDegreeOfParallelism`. Tail-recursive `let rec` inside the CE is supported, and nesting a `cancellableTask` inside `async` propagates the token.
->
-> ## AsyncEx
->
-> `asyncEx` is `Async` with several behaviour differences that usually match what people expect:
->
-> - `use` works with `IAsyncDisposable`
-> - `let!` / `do!` accept `Task`, `ValueTask`, and any awaitable directly
-> - exceptions are unwrapped, so you catch `ArgumentException` instead of `AggregateException`
-> - `for` supports `IAsyncEnumerable`
->
-> Open `IcedTasks.Polyfill.Async` to have plain `async { }` mean `asyncEx`.
->
-> ## parallelAsync
->
-> ```fsharp
-> let getDataFromAFewSites = parallelAsync {
->     let! result1 = exampleHttpCall "howManyPlantsDoIOwn"
->     and! result2 = exampleHttpCall "whatsTheTemperature"
->     and! result3 = exampleHttpCall "whereIsMyPhone"
->     return ()
-> }
-> ```
->
-> ## When it's most useful
->
-> - **You use `task` but keep losing cancellation.** This is the strongest case. Any codebase where `CancellationToken` has to be passed manually down long call chains — web APIs, background workers, CLI tools with Ctrl+C handling — gets materially cleaner with `cancellableTask`.
-> - **You are migrating from `Async` to `Task` for performance** and miss the cold, cancellation-aware semantics. `coldTask` and `cancellableTask` bridge that gap.
-> - **Hot-path async code that usually completes synchronously** (cache hits, buffered reads). `valueTask` / `poolingValueTask` and the `cancellablePoolingValueTask` variants cut allocations. The performance claims in the README are qualitative; benchmark your own workload.
-> - **You keep hitting the sharp edges of `Async`** — `AggregateException` wrapping, no `IAsyncDisposable`, awkward `Task` interop. Use `asyncEx`.
-> - **You want fan-out with clean syntax** — `parallelAsync` with `and!`, or `CancellableTask.whenAllThrottled` when you need a concurrency cap.
->
-> When it is *not* worth it: simple hot fire-and-forget work with no cancellation story, or a codebase that already threads tokens explicitly and is happy doing so. The cost of adopting IcedTasks is one dependency plus the learning curve of which builder to reach for.
->
-> Full docs, including a "Choosing a builder" comparison page and how-to guides for ASP.NET Minimal API, Falco, Giraffe, and console apps, are at the project site.
->
-> Sources: [github.com/TheAngryByrd/IcedTasks](https://github.com/TheAngryByrd/IcedTasks), [jimmybyrd.me/IcedTasks](https://www.jimmybyrd.me/IcedTasks/), [NuGet: IcedTasks](https://www.nuget.org/packages/IcedTasks)
-
-#### After
-
-> # IcedTasks
->
-> IcedTasks is an F# library. It adds computation expressions that the built-in `task` computation expression does not supply. The library is built on the resumable code feature of F# 6.0.
->
-> ## Installation
->
-> Add the `IcedTasks` NuGet package to your project.
->
-> ```sh
-> dotnet add package IcedTasks
-> ```
->
-> Then open the namespace in each file that uses a builder.
->
-> ```fsharp
-> open IcedTasks
-> ```
->
-> ## Basic use
->
-> Each computation expression works like the F# `task` computation expression. Write `let!` to bind an asynchronous result. Write `and!` to start independent operations together. Write `return` to produce the result.
->
-> ```fsharp
-> open IcedTasks
->
-> let getAnswer () =
->     valueTask { return 42 }
-> ```
->
-> ## Cancellation with cancellableTask
->
-> `cancellableTask` is the most common reason to use the library. A `CancellableTask<'T>` is a function of this shape:
->
-> ```fsharp
-> CancellationToken -> Task<'T>
-> ```
->
-> The work does not start until the caller supplies a token. The builder then carries the token through the complete computation and checks cancellation before each bind.
->
-> To write a cancellable operation, do not add a token parameter to the function signature. Get the ambient token inside the computation expression instead.
->
-> ```fsharp
-> open System.Threading.Tasks
-> open IcedTasks
->
-> let loadCustomer customerId =
->     cancellableTask {
->         let! cancellationToken = CancellableTask.getCancellationToken ()
->         do! Task.Delay(10, cancellationToken)
->         return {| Id = customerId; Name = "Ada" |}
->     }
-> ```
->
-> You can also bind a function that receives the token. This form is faster.
->
-> ```fsharp
-> let loadOpenOrders () =
->     cancellableTask { do! fun cancellationToken -> Task.Delay(10, cancellationToken) }
-> ```
->
-> To start the operation, call it with a token at the application boundary. In an ASP.NET Core application, use `HttpContext.RequestAborted`. In a console application or a test, create a `CancellationTokenSource`.
->
-> ```fsharp
-> open System
-> open System.Threading
->
-> let run () =
->     task {
->         use cancellation = new CancellationTokenSource(TimeSpan.FromSeconds 2.0)
->         let! customer = loadCustomer 42 cancellation.Token
->         return customer
->     }
-> ```
->
-> ## Parallel operations with parallelAsync
->
-> `parallelAsync` runs multiple `Async<'T>` operations at the same time. Use `and!` for each operation that does not need the result of another operation.
->
-> ```fsharp
-> let getData =
->     parallelAsync {
->         let! plants = exampleHttpCall "howManyPlantsDoIOwn"
->         and! temperature = exampleHttpCall "whatsTheTemperature"
->         return plants, temperature
->     }
-> ```
->
-> ## Available builders
->
-> | Builder | Result shape |
-> | --- | --- |
-> | `task`, `backgroundTask`, `taskUnit`, `backgroundTaskUnit` | `Task<'T>` or `Task` |
-> | `valueTask`, `vTask`, `valueTaskUnit`, `vTaskUnit` | `ValueTask<'T>` or `ValueTask` |
-> | `poolingValueTask`, `pvTask` | `ValueTask<'T>`, .NET 6.0 or later |
-> | `coldTask`, `backgroundColdTask` | `unit -> Task<'T>` |
-> | `cancellableTask`, `backgroundCancellableTask` | `CancellationToken -> Task<'T>` |
-> | `cancellableValueTask`, `cancellablePoolingValueTask` | `CancellationToken -> ValueTask<'T>` |
-> | `asyncEx` | `Async<'T>` |
-> | `parallelAsync` | `Async<'T>` |
->
-> The `background` builders move the continuation to the thread pool. They have the same purpose as `ConfigureAwait(false)`. Use a `background` builder when the continuation must not stay on the current synchronization context.
->
-> The `IcedTasks.Polyfill.Task` and `IcedTasks.Polyfill.Async` namespaces shadow the F# `task` and `async` computation expressions with the improved versions. Open a polyfill namespace when you want the improved behavior without a change to your existing code.
->
-> ## When the library is most useful
->
-> Select a builder by the shape of the operation, not by speed.
->
-> - The work is asynchronous and task-shaped: use `task`.
-> - The work can complete synchronously, and you want to avoid an allocation in that case: use `valueTask`.
-> - Cancellation is part of the API contract: use `cancellableTask` or `cancellableValueTask`.
-> - The work must not start until the caller invokes it, and cancellation is not necessary: use `coldTask`.
-> - The operation belongs to the F# `Async` world, but it must interoperate with `Task`, `ValueTask`, `IAsyncDisposable`, or `IAsyncEnumerable`: use `asyncEx`.
-> - Multiple `Async` operations must run in parallel with `and!`: use `parallelAsync`.
-> - Allocation is critical, and the shape is already a `ValueTask`: measure first, then consider a pooling builder.
->
-> The library gives the largest benefit in these conditions:
->
-> - A server application must stop work when the client cancels the request. `cancellableTask` removes the token parameter from each function signature and stops the work at the next bind.
-> - A deep call chain must pass a `CancellationToken` through many functions. The implicit token removes this repeated parameter.
-> - An operation must be repeatable. A cold builder or a cancellable builder produces a function, so the caller can start the same value more than once.
-> - An asynchronous method completes synchronously in most calls. `valueTask` prevents a `Task<'T>` allocation in that case.
-> - F# `Async` code must call modern .NET asynchronous APIs. `asyncEx` supplies the necessary bind overloads.
->
-> The library gives little benefit when the built-in `task` computation expression is sufficient. If your code does not need cancellation, cold execution, `ValueTask` results, applicative `and!`, or extended .NET interoperability, continue to use `task`.
-
-#### Observed differences
-
-- Evaluative asides were removed: "The headline features", "the main event", "This is the strongest case", "the sharp edges of `Async`", "gets materially cleaner".
-- The "before" text titles a section "Cancellable tasks (the main event)". The "after" text names the builder: "Cancellation with cancellableTask".
-- The "after" text gives complete examples with the necessary `open` statements and a named function. The "before" text gives fragments that use `do!` outside a computation expression and depend on undeclared names.
-- The "when useful" list became one condition for each builder, under a single selection rule: "Select a builder by the shape of the operation, not by speed."
-- The "before" text uses em-dash asides to hold three examples inside one sentence ("web APIs, background workers, CLI tools with Ctrl+C handling"). The "after" text uses one statement for each condition.
-- The "after" text explains what the `background` builders do. The "before" text lists `backgroundTask` and `backgroundCancellableTask` in a table but does not explain them.
-- The "before" text closes with an open-ended judgement ("When it is *not* worth it..."). The "after" text closes with a plain condition and a direct instruction: "continue to use `task`".
-- Contractions were removed: "it's", "does not" replaces "doesn't".
-- The "after" text is longer than the "before" text. One statement for each action increased the length, and the "after" text adds a builder table plus five separate examples.
-
 ---
 
 ## Example 2: Procedure (publish a NuGet package)
@@ -1189,6 +1189,82 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - Parenthetical asides and em-dash chains became separate short sentences or notes.
 - Expected results are explicit: the output folder, the validation time, and the verification step.
 - The version-immutability warning became two plain statements: "A package version is permanent. You cannot push the same version two times."
+
+### Claude Code — Claude Opus 5 (1M context) (`claude-opus-5[1m]`)
+
+#### Before
+
+> Steps to publish a new package to NuGet:
+>
+> 1. Create a NuGet account at nuget.org and sign in.
+> 2. Generate an API key from your account settings, scoped to the package glob pattern you intend to publish.
+> 3. Add package metadata to your project file (`.csproj`/`.fsproj`): `PackageId`, `Version`, `Authors`, `Description`, `PackageLicenseExpression`, `RepositoryUrl`, and optionally `PackageReadmeFile` and `PackageIcon`.
+> 4. Build in Release configuration: `dotnet build -c Release`.
+> 5. Pack the project: `dotnet pack -c Release -o ./nupkg`.
+> 6. Inspect the resulting `.nupkg` (it is a zip archive) to confirm the metadata, target frameworks, and included files are correct.
+> 7. Optionally push to a local or test feed first to validate installation.
+> 8. Push to NuGet: `dotnet nuget push ./nupkg/*.nupkg --api-key <key> --source https://api.nuget.org/v3/index.json`.
+> 9. Wait for indexing (usually a few minutes) and verify the package page on nuget.org.
+> 10. Tag the release in git and publish release notes.
+>
+> Notes: store the API key in a secret store or CI secret rather than in source; symbol packages (`.snupkg`) are pushed alongside the main package; a published version number can never be reused, so only unlist mistakes rather than expecting deletion.
+
+#### After
+
+> # Publish a New Package to NuGet
+>
+> ## Before You Start
+>
+> You must have these items:
+>
+> - A NuGet.org account
+> - A .NET SDK installation
+> - A project that builds without errors
+>
+> ## Procedure
+>
+> 1. Set the package metadata in the project file.
+> 2. Include a package ID, a version, the authors, and a description.
+> 3. Add a README file and a license expression to the project file.
+> 4. Run `dotnet build --configuration Release` to build the project.
+> 5. Correct each build error before you continue.
+> 6. Run `dotnet pack --configuration Release` to create the package.
+> 7. Find the `.nupkg` file in the `bin/Release` folder.
+> 8. Examine the package contents with the NuGet Package Explorer.
+> 9. Sign in to NuGet.org.
+> 10. Open the API keys page in your account settings.
+> 11. Create an API key with push permission for the package ID.
+> 12. Copy the API key value.
+>
+>     **Note:** NuGet.org shows the key value one time only.
+>
+> 13. Run this command to push the package:
+>
+>     ```text
+>     dotnet nuget push <package-file> --api-key <key> --source https://api.nuget.org/v3/index.json
+>     ```
+>
+> 14. Wait for NuGet.org to validate and index the package.
+> 15. Open the package page on NuGet.org to confirm the result.
+>
+> ## Notes
+>
+> The package ID must be unique on NuGet.org. NuGet.org reserves the ID after your first successful push.
+>
+> You cannot delete a published version. You can only unlist a version to hide it from search results.
+>
+> Indexing can take several minutes. The package is available for download before the search results show it.
+
+#### Observed differences
+
+- The "after" text puts the prerequisites in a "Before You Start" section. The "before" text makes the account and the API key steps 1 and 2 of the main sequence.
+- Each "after" step contains one instruction. The "before" text combines several actions in one step, for example step 3, which names seven metadata properties in one sentence.
+- The "after" text states expected results and checks that the "before" text leaves implicit: "Correct each build error before you continue", "Find the `.nupkg` file in the `bin/Release` folder".
+- The "before" text puts three unrelated notes in one sentence with semicolons. The "after" text splits the notes into short statements in a separate section.
+- The one-time display of the API key became a labelled note.
+- The "before" text uses "Optionally push to a local or test feed first". The "after" text drops the conditional step and gives one direct examination step instead.
+- The step count increased from 10 to 15, because one instruction for each step splits the combined steps.
+- One regression: the "after" text adds a claim the prompt did not supply, that NuGet.org reserves the package ID after the first push. A human editor must verify this statement.
 
 ### Codex — GPT-5.6 (`gpt-5.6-sol`)
 
@@ -1352,82 +1428,6 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - The "after" text uses "Run" as the verb for the push command, making it a direct instruction. The "before" text says "Run `dotnet nuget push...`" with more parameter detail.
 - The "after" text adds "Verify the package appears on nuget.org" as an explicit final step.
 
-### Claude Code — Claude Opus 5 (1M context) (`claude-opus-5[1m]`)
-
-#### Before
-
-> Steps to publish a new package to NuGet:
->
-> 1. Create a NuGet account at nuget.org and sign in.
-> 2. Generate an API key from your account settings, scoped to the package glob pattern you intend to publish.
-> 3. Add package metadata to your project file (`.csproj`/`.fsproj`): `PackageId`, `Version`, `Authors`, `Description`, `PackageLicenseExpression`, `RepositoryUrl`, and optionally `PackageReadmeFile` and `PackageIcon`.
-> 4. Build in Release configuration: `dotnet build -c Release`.
-> 5. Pack the project: `dotnet pack -c Release -o ./nupkg`.
-> 6. Inspect the resulting `.nupkg` (it is a zip archive) to confirm the metadata, target frameworks, and included files are correct.
-> 7. Optionally push to a local or test feed first to validate installation.
-> 8. Push to NuGet: `dotnet nuget push ./nupkg/*.nupkg --api-key <key> --source https://api.nuget.org/v3/index.json`.
-> 9. Wait for indexing (usually a few minutes) and verify the package page on nuget.org.
-> 10. Tag the release in git and publish release notes.
->
-> Notes: store the API key in a secret store or CI secret rather than in source; symbol packages (`.snupkg`) are pushed alongside the main package; a published version number can never be reused, so only unlist mistakes rather than expecting deletion.
-
-#### After
-
-> # Publish a New Package to NuGet
->
-> ## Before You Start
->
-> You must have these items:
->
-> - A NuGet.org account
-> - A .NET SDK installation
-> - A project that builds without errors
->
-> ## Procedure
->
-> 1. Set the package metadata in the project file.
-> 2. Include a package ID, a version, the authors, and a description.
-> 3. Add a README file and a license expression to the project file.
-> 4. Run `dotnet build --configuration Release` to build the project.
-> 5. Correct each build error before you continue.
-> 6. Run `dotnet pack --configuration Release` to create the package.
-> 7. Find the `.nupkg` file in the `bin/Release` folder.
-> 8. Examine the package contents with the NuGet Package Explorer.
-> 9. Sign in to NuGet.org.
-> 10. Open the API keys page in your account settings.
-> 11. Create an API key with push permission for the package ID.
-> 12. Copy the API key value.
->
->     **Note:** NuGet.org shows the key value one time only.
->
-> 13. Run this command to push the package:
->
->     ```text
->     dotnet nuget push <package-file> --api-key <key> --source https://api.nuget.org/v3/index.json
->     ```
->
-> 14. Wait for NuGet.org to validate and index the package.
-> 15. Open the package page on NuGet.org to confirm the result.
->
-> ## Notes
->
-> The package ID must be unique on NuGet.org. NuGet.org reserves the ID after your first successful push.
->
-> You cannot delete a published version. You can only unlist a version to hide it from search results.
->
-> Indexing can take several minutes. The package is available for download before the search results show it.
-
-#### Observed differences
-
-- The "after" text puts the prerequisites in a "Before You Start" section. The "before" text makes the account and the API key steps 1 and 2 of the main sequence.
-- Each "after" step contains one instruction. The "before" text combines several actions in one step, for example step 3, which names seven metadata properties in one sentence.
-- The "after" text states expected results and checks that the "before" text leaves implicit: "Correct each build error before you continue", "Find the `.nupkg` file in the `bin/Release` folder".
-- The "before" text puts three unrelated notes in one sentence with semicolons. The "after" text splits the notes into short statements in a separate section.
-- The one-time display of the API key became a labelled note.
-- The "before" text uses "Optionally push to a local or test feed first". The "after" text drops the conditional step and gives one direct examination step instead.
-- The step count increased from 10 to 15, because one instruction for each step splits the combined steps.
-- One regression: the "after" text adds a claim the prompt did not supply, that NuGet.org reserves the package ID after the first push. A human editor must verify this statement.
-
 ---
 
 ## Example 3: Error message
@@ -1465,6 +1465,38 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - The "before" text states the failure two times: "Unable to load settings" and "could not load your settings".
 - The "before" text adds behavior that the prompt did not state: "MyApp will continue with default settings for this session." The skill version contains only the known facts.
 - The passive "will not be saved until the file is fixed" pattern does not appear in the "after" text.
+
+### Claude Code — Claude Opus 5 (1M context) (`claude-opus-5[1m]`)
+
+#### Before
+
+> Cannot load settings file.
+>
+> The application cannot read your settings file because it contains invalid JSON.
+>
+> File: %APPDATA%\MyApp\settings.json
+> Error location: line 12
+>
+> To correct this problem:
+>
+> 1. Open the file in a text editor.
+> 2. Correct the JSON syntax error at line 12. Look for a missing comma, a missing quotation mark, or an extra comma.
+> 3. Save the file and start the application again.
+>
+> If you cannot correct the file, delete or rename it. The application will create a new settings file with the default values.
+
+#### After
+
+> Cannot read the settings file %APPDATA%\MyApp\settings.json. The file contains invalid JSON at line 12. Correct the JSON syntax at line 12, then start the application again.
+
+#### Observed differences
+
+- The "after" text is three short statements: the failed operation, the cause, and the corrective action.
+- The "before" text states the failure two times: "Cannot load settings file." and "The application cannot read your settings file".
+- The "before" text adds causes the prompt did not state: "a missing comma, a missing quotation mark, or an extra comma".
+- The "before" text adds behavior the prompt did not state: "The application will create a new settings file with the default values."
+- The "before" text uses the vague pronoun "it" for the file in "because it contains invalid JSON". The "after" text names the file.
+- One regression: the "after" text drops the second recovery action. A user who cannot repair the JSON gets no instruction. A human editor can add one sentence that tells the user to delete the file.
 
 ### Codex — GPT-5.6 (`gpt-5.6-sol`)
 
@@ -1540,38 +1572,6 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - The "after" text uses "Correct the JSON syntax at line 12" as a direct imperative instruction. The "before" text does not include a corrective action.
 - Both versions preserve the file path and line number.
 
-### Claude Code — Claude Opus 5 (1M context) (`claude-opus-5[1m]`)
-
-#### Before
-
-> Cannot load settings file.
->
-> The application cannot read your settings file because it contains invalid JSON.
->
-> File: %APPDATA%\MyApp\settings.json
-> Error location: line 12
->
-> To correct this problem:
->
-> 1. Open the file in a text editor.
-> 2. Correct the JSON syntax error at line 12. Look for a missing comma, a missing quotation mark, or an extra comma.
-> 3. Save the file and start the application again.
->
-> If you cannot correct the file, delete or rename it. The application will create a new settings file with the default values.
-
-#### After
-
-> Cannot read the settings file %APPDATA%\MyApp\settings.json. The file contains invalid JSON at line 12. Correct the JSON syntax at line 12, then start the application again.
-
-#### Observed differences
-
-- The "after" text is three short statements: the failed operation, the cause, and the corrective action.
-- The "before" text states the failure two times: "Cannot load settings file." and "The application cannot read your settings file".
-- The "before" text adds causes the prompt did not state: "a missing comma, a missing quotation mark, or an extra comma".
-- The "before" text adds behavior the prompt did not state: "The application will create a new settings file with the default values."
-- The "before" text uses the vague pronoun "it" for the file in "because it contains invalid JSON". The "after" text names the file.
-- One regression: the "after" text drops the second recovery action. A user who cannot repair the JSON gets no instruction. A human editor can add one sentence that tells the user to delete the file.
-
 ---
 
 ## Example 4: Code comment
@@ -1612,6 +1612,34 @@ for (var attempt = 0; attempt < 5; attempt++)
 - The "after" comment does not restate the code. The "before" comment lists the delay values and the return behavior, which the code already shows.
 - The removal condition is one direct instruction: "Remove this loop when issue #123 adds a rate-limit budget."
 - The difference is small in this example. The unaided model already wrote a serviceable workaround comment. Select this example only if you want to show a case with a modest change.
+
+### Claude Code — Claude Opus 5 (1M context) (`claude-opus-5[1m]`)
+
+#### Before
+
+```csharp
+// Retries up to 5 times when the upstream API answers with HTTP 429 (Too Many
+// Requests), which it does intermittently at peak load. The delay doubles after
+// each attempt (1, 2, 4, 8 seconds) to give the server time to recover.
+// Remove this loop when issue #123 adds a rate-limit budget.
+```
+
+#### After
+
+```csharp
+// The upstream API returns HTTP 429 during peak load.
+// Each retry waits two times longer than the last retry.
+// Remove this loop when issue #123 adds a rate-limit budget.
+```
+
+#### Observed differences
+
+- The "before" comment starts with one long sentence that holds three clauses and a relative clause ("which it does intermittently at peak load"). The "after" comment uses one statement for each line.
+- The "after" comment does not list the delay values, which the code already shows. It states the rule instead: "Each retry waits two times longer than the last retry."
+- The "after" comment does not repeat the retry count, which the loop bound already shows.
+- The "before" comment adds a purpose the prompt did not state: "to give the server time to recover".
+- The "before" comment gives an incorrect list of delay values. The loop makes five delays of 1, 2, 4, 8, and 16 seconds, and the comment names only four. The "after" comment does not repeat the values, so it cannot disagree with the code.
+- Both versions use the same removal instruction.
 
 ### Codex — GPT-5.6 (`gpt-5.6-sol`)
 
@@ -1709,34 +1737,6 @@ for (var attempt = 0; attempt < 5; attempt++)
 - The "after" text removes the period after "load" and uses a single sentence structure.
 - Both versions reference Issue #123 as the removal condition.
 
-### Claude Code — Claude Opus 5 (1M context) (`claude-opus-5[1m]`)
-
-#### Before
-
-```csharp
-// Retries up to 5 times when the upstream API answers with HTTP 429 (Too Many
-// Requests), which it does intermittently at peak load. The delay doubles after
-// each attempt (1, 2, 4, 8 seconds) to give the server time to recover.
-// Remove this loop when issue #123 adds a rate-limit budget.
-```
-
-#### After
-
-```csharp
-// The upstream API returns HTTP 429 during peak load.
-// Each retry waits two times longer than the last retry.
-// Remove this loop when issue #123 adds a rate-limit budget.
-```
-
-#### Observed differences
-
-- The "before" comment starts with one long sentence that holds three clauses and a relative clause ("which it does intermittently at peak load"). The "after" comment uses one statement for each line.
-- The "after" comment does not list the delay values, which the code already shows. It states the rule instead: "Each retry waits two times longer than the last retry."
-- The "after" comment does not repeat the retry count, which the loop bound already shows.
-- The "before" comment adds a purpose the prompt did not state: "to give the server time to recover".
-- The "before" comment gives an incorrect list of delay values. The loop makes five delays of 1, 2, 4, 8, and 16 seconds, and the comment names only four. The "after" comment does not repeat the values, so it cannot disagree with the code.
-- Both versions use the same removal instruction.
-
 ---
 
 ## Example 5: Destructive command documentation
@@ -1813,6 +1813,44 @@ for (var attempt = 0; attempt < 5; attempt++)
 - The backup instruction is in a "Before you start" section. The "before" text puts an instruction under "See also", where a reader expects links.
 - Each behavior sentence names the actor: "The command deletes", "The command applies".
 - Decorative wording was removed: "clean, freshly initialized state".
+
+### Claude Code — Claude Opus 5 (1M context) (`claude-opus-5[1m]`)
+
+#### Before
+
+> ## db reset
+>
+> Deletes all tables in the database and then applies the initial schema.
+>
+> ```
+> db reset
+> ```
+>
+> **Warning:** This command permanently deletes all data in the database. The data cannot be recovered.
+
+#### After
+
+> ## db reset
+>
+> The `db reset` command deletes all tables in the database. Then the command applies the initial schema.
+>
+> **CAUTION: Make a backup of the database before you use this command. The command deletes all data in the database permanently.**
+>
+> ### Usage
+>
+> ```text
+> db reset
+> ```
+
+#### Observed differences
+
+- The behavior became two sentences in execution order. Each sentence names the command as the subject. The "before" text joins both actions with "and then" and gives no subject.
+- The safety label changed from "Warning" to "CAUTION", because the risk is data damage, not injury.
+- The caution starts with an instruction ("Make a backup of the database before you use this command") and then states the result. The "before" warning states the result only.
+- The "after" text puts the caution before the usage section, so the reader sees the risk before the command.
+- The passive "The data cannot be recovered" does not appear in the "after" text.
+- The "after" text labels the code block with a language (`text`) and puts it under a "Usage" heading.
+- The change in this example is small, because the "before" text is already short. The label, the subject, and the order carry the difference.
 
 ### Codex — GPT-5.6 (`gpt-5.6-sol`)
 
@@ -1978,44 +2016,6 @@ for (var attempt = 0; attempt < 5; attempt++)
 - The "after" text uses "The command then applies the initial schema" with "The command" as the subject for both actions. The "before" text uses "deleting all tables and reapplying the initial schema" as a participial phrase.
 - The "before" text adds a "Warning" section at the end with backup advice. The "after" text states the data loss fact directly without additional advisory text.
 
-### Claude Code — Claude Opus 5 (1M context) (`claude-opus-5[1m]`)
-
-#### Before
-
-> ## db reset
->
-> Deletes all tables in the database and then applies the initial schema.
->
-> ```
-> db reset
-> ```
->
-> **Warning:** This command permanently deletes all data in the database. The data cannot be recovered.
-
-#### After
-
-> ## db reset
->
-> The `db reset` command deletes all tables in the database. Then the command applies the initial schema.
->
-> **CAUTION: Make a backup of the database before you use this command. The command deletes all data in the database permanently.**
->
-> ### Usage
->
-> ```text
-> db reset
-> ```
-
-#### Observed differences
-
-- The behavior became two sentences in execution order. Each sentence names the command as the subject. The "before" text joins both actions with "and then" and gives no subject.
-- The safety label changed from "Warning" to "CAUTION", because the risk is data damage, not injury.
-- The caution starts with an instruction ("Make a backup of the database before you use this command") and then states the result. The "before" warning states the result only.
-- The "after" text puts the caution before the usage section, so the reader sees the risk before the command.
-- The passive "The data cannot be recovered" does not appear in the "after" text.
-- The "after" text labels the code block with a language (`text`) and puts it under a "Usage" heading.
-- The change in this example is small, because the "before" text is already short. The label, the subject, and the order carry the difference.
-
 ---
 
 ## Example 6: Changelog entry
@@ -2040,6 +2040,28 @@ for (var attempt = 0; attempt < 5; attempt++)
 - The passive "are now cached" became the active "The `/users` endpoint now caches its responses".
 - The informal "dropped" became the precise verb "decreased".
 - The difference is small in this example, because the prompt already contained the exact facts. Select this example only if you want to show a case with a modest change.
+
+### Claude Code — Claude Opus 5 (1M context) (`claude-opus-5[1m]`)
+
+#### Before
+
+> ### Changed
+>
+> - `/users` responses are now cached for 60 seconds. Median response time under load testing dropped from 480 ms to 12 ms.
+
+#### After
+
+> ### Changed
+>
+> - The `/users` endpoint now caches each response for 60 seconds. In load tests, the median response time decreased from 480 ms to 12 ms.
+
+#### Observed differences
+
+- The passive "are now cached" became the active "The `/users` endpoint now caches each response".
+- The informal verb "dropped" became the precise verb "decreased".
+- The "before" text compresses a clause into the noun phrase "Median response time under load testing". The "after" text uses a prepositional phrase and a complete clause: "In load tests, the median response time decreased".
+- The "after" text adds the article "The" to both subjects.
+- The change is small, because the prompt already supplied the exact facts and the correct numbers. Select this example only when you want to show a case of modest change.
 
 ### Codex — GPT-5.6 (`gpt-5.6-sol`)
 
@@ -2122,28 +2144,6 @@ for (var attempt = 0; attempt < 5; attempt++)
 - The "before" text uses "ms" abbreviation. The "after" text also uses "ms".
 - Both versions preserve the 60-second cache duration and the 480 ms to 12 ms performance improvement.
 
-### Claude Code — Claude Opus 5 (1M context) (`claude-opus-5[1m]`)
-
-#### Before
-
-> ### Changed
->
-> - `/users` responses are now cached for 60 seconds. Median response time under load testing dropped from 480 ms to 12 ms.
-
-#### After
-
-> ### Changed
->
-> - The `/users` endpoint now caches each response for 60 seconds. In load tests, the median response time decreased from 480 ms to 12 ms.
-
-#### Observed differences
-
-- The passive "are now cached" became the active "The `/users` endpoint now caches each response".
-- The informal verb "dropped" became the precise verb "decreased".
-- The "before" text compresses a clause into the noun phrase "Median response time under load testing". The "after" text uses a prepositional phrase and a complete clause: "In load tests, the median response time decreased".
-- The "after" text adds the article "The" to both subjects.
-- The change is small, because the prompt already supplied the exact facts and the correct numbers. Select this example only when you want to show a case of modest change.
-
 ---
 
 ## Example 7: Ambiguous reference in a description
@@ -2166,6 +2166,24 @@ for (var attempt = 0; attempt < 5; attempt++)
 - Each "after" sentence has the proxy as the named subject and contains one action.
 - The "before" text adds facts that the prompt did not state: rejection of unauthorized requests, a response returned to the client, and an "audit trail". The skill version states only the supplied facts.
 - One regression: "examines each request to make sure that it is correct" is longer and less precise than the source verb "validates". A human editor can keep "validates" as the project term.
+
+### Claude Code — Claude Opus 5 (1M context) (`claude-opus-5[1m]`)
+
+#### Before
+
+> The proxy validates each incoming request, then forwards it to the backend. It logs both the request and the response, so failed requests can be examined later.
+
+#### After
+
+> The proxy validates each request. If the request is valid, the proxy sends the request to the backend. The proxy writes a record of the request and the response. These records let you examine a failed request later.
+
+#### Observed differences
+
+- The "before" text joins two actions in the first sentence with "then". The "after" text uses one action for each sentence.
+- The "before" text uses the pronouns "it" and "It" for the request and the proxy. The "after" text names the proxy as the subject of each sentence.
+- The passive "can be examined later" became the active "These records let you examine a failed request later", which addresses the reader directly.
+- One regression: the "after" text adds a condition the prompt did not state, "If the request is valid". A human editor must remove it.
+- One regression: the "after" text replaces the project term "logs" with "writes a record of" and "These records". A human editor can keep "logs" as the project term.
 
 ### Codex — GPT-5.6 (`gpt-5.6-sol`)
 
@@ -2235,21 +2253,3 @@ for (var attempt = 0; attempt < 5; attempt++)
 - The "before" text says "logs both the request and response payloads" while the "after" text says "logs the request and the response" — the "after" text is more concise.
 - The "before" text uses "This logging enables post-hoc analysis of failed requests" as a passive construction. The "after" text uses "The log lets you examine failed requests" with an active verb and direct address to the reader.
 - The "after" text repeats "The proxy" as the subject for the first three sentences, maintaining consistent subject reference. The "before" text shifts from "The proxy" to "This logging" as the subject.
-
-### Claude Code — Claude Opus 5 (1M context) (`claude-opus-5[1m]`)
-
-#### Before
-
-> The proxy validates each incoming request, then forwards it to the backend. It logs both the request and the response, so failed requests can be examined later.
-
-#### After
-
-> The proxy validates each request. If the request is valid, the proxy sends the request to the backend. The proxy writes a record of the request and the response. These records let you examine a failed request later.
-
-#### Observed differences
-
-- The "before" text joins two actions in the first sentence with "then". The "after" text uses one action for each sentence.
-- The "before" text uses the pronouns "it" and "It" for the request and the proxy. The "after" text names the proxy as the subject of each sentence.
-- The passive "can be examined later" became the active "These records let you examine a failed request later", which addresses the reader directly.
-- One regression: the "after" text adds a condition the prompt did not state, "If the request is valid". A human editor must remove it.
-- One regression: the "after" text replaces the project term "logs" with "writes a record of" and "These records". A human editor can keep "logs" as the project term.
