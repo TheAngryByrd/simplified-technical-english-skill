@@ -23,7 +23,7 @@ It supports these text types:
 
 Technical readers do not always use English as their native language. Many English words also have multiple meanings and synonyms.
 
-Complex sentence structures can cause more confusion. In aerospace, readers must understand maintenance and operation documents so systems operate safely and correctly.
+Complex sentence structures can also cause confusion. In aerospace, readers must understand maintenance and operation documents so systems operate safely and correctly.
 
 The standard controls grammar, style, and vocabulary to reduce these sources of confusion.
 
@@ -60,9 +60,9 @@ The same skill folder works with Codex, Claude Code, OpenCode, and other compati
 
 ### Install with the Skills CLI
 
-Use the [Vercel Skills CLI](https://github.com/vercel-labs/skills) for automatic agent detection and installation:
+The Skills CLI requires Node.js `22.20.0` or newer.
 
-The current CLI requires Node.js `22.20.0` or newer.
+Use the [Vercel Skills CLI](https://github.com/vercel-labs/skills) for automatic agent detection and installation:
 
 ```text
 npx skills add TheAngryByrd/simplified-technical-english-skill
@@ -155,7 +155,7 @@ npx skills list
 
 The output includes `simplified-technical-english`.
 
-Start a new session if the harness does not detect the skill automatically.
+If the harness does not detect the skill automatically, start a new session.
 
 ## Optional: provide the specification
 
@@ -186,9 +186,7 @@ $env:ASD_STE100_PDF = (Resolve-Path `
 
 ### Search the PDF for precise information
 
-The core writing guidance does not require `uv`.
-
-We use `uv` only to run the optional `search_issue_9.py` script. The script searches your local PDF for exact rules and dictionary entries.
+The optional `search_issue_9.py` script searches your local PDF for exact rules and dictionary entries. Use `uv` to run the script.
 
 The search script uses Python and `pypdf` to read the PDF.
 
