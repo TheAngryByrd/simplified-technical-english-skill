@@ -186,7 +186,7 @@ $env:ASD_STE100_PDF = (Resolve-Path `
 
 ### Search the PDF for precise information
 
-The optional `search_issue_9.py` script searches your local PDF for exact rules and dictionary entries. Use `uv` to run the script.
+The optional `search_issue_9.py` script searches your local PDF for exact rules and dictionary entries. The following examples use `uv` to run the script.
 
 The search script uses Python and `pypdf` to read the PDF.
 
