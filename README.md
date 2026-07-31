@@ -29,7 +29,7 @@ The standard controls grammar, style, and vocabulary to reduce these sources of 
 
 ### How the skill helps fix LLM word slop
 
-Large language models can produce fluent text that is vague, repetitive, or longer than necessary. This output is often called word slop.
+[Large language models](https://en.wikipedia.org/wiki/Large_language_model) can produce fluent text that is vague, repetitive, or longer than necessary. This output is often called [word slop](https://en.wikipedia.org/wiki/AI_slop).
 
 The skill replaces a general clarity request with specific checks:
 
@@ -60,7 +60,7 @@ The same skill folder works with Codex, Claude Code, OpenCode, and other compati
 
 ### Install with the Skills CLI
 
-The Skills CLI requires Node.js `22.20.0` or newer.
+The Skills CLI requires [Node.js](https://nodejs.org/) `22.20.0` or newer.
 
 Use the [Vercel Skills CLI](https://github.com/vercel-labs/skills) for automatic agent detection and installation:
 
@@ -141,7 +141,7 @@ Use the skill for other technical text:
 Use the simplified-technical-english skill to rewrite this error message.
 ```
 
-For continuous project guidance, add an instruction to the harness project file. For example, add this instruction to `AGENTS.md`:
+For continuous project guidance, add an instruction to the harness project file. For example, add this instruction to [`AGENTS.md`](https://agents.md/):
 
 ```markdown
 Use the `simplified-technical-english` skill for technical prose.
@@ -171,7 +171,7 @@ The repository ignores PDF files.
 
 Do not commit the PDF.
 
-Do not redistribute the PDF unless you have permission from ASD.
+Do not redistribute the PDF unless you have permission from [ASD](https://www.asd-europe.org/).
 
 Set the PDF path before you request a precise source check:
 
@@ -188,7 +188,7 @@ $env:ASD_STE100_PDF = (Resolve-Path `
 
 The optional `search_issue_9.py` script searches your local PDF for exact rules and dictionary entries. The following examples use `uv` to run the script.
 
-The search script uses Python and `pypdf` to read the PDF.
+The search script uses Python and [`pypdf`](https://pypi.org/project/pypdf/) to read the PDF.
 
 The script declares Python 3.10 or newer and `pypdf` version 5 or 6 in its inline metadata.
 
