@@ -559,6 +559,230 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - The "when useful" list became a set of "You want to..." conditions instead of bolded labels with descriptions.
 - The "after" text drops contractions ("won't", "doesn't") and casual asides ("cheaper synchronous paths", "parameter pollution").
 
+#### opencode — nemotron-3-ultra-free (`opencode/nemotron-3-ultra-free`)
+
+##### Before
+
+> **IcedTasks** is an F# library providing additional computation expressions for working with Tasks, ValueTasks, and Async workflows. It runs on .NET 6+ and requires F# 6+ (for resumable code support).
+>
+> ## Installation
+>
+> ```bash
+> dotnet add package IcedTasks
+> ```
+>
+> ## Main Computation Expressions
+>
+> | Expression | Type | Use Case |
+> |------------|------|----------|
+> | `valueTask` / `poolingValueTask` | `ValueTask<'T>` | Better performance for sync-heavy code; pooling variant uses `ValueTask` pooling (.NET 8+) |
+> | `coldTask` | `unit -> Task<'T>` | Lazy evaluation — task doesn't start until invoked; re-runnable |
+> | `cancellableTask` / `cancellableValueTask` | `CancellationToken -> Task<'T>` | Lazy + built-in cancellation token flow; checks cancellation at every bind |
+> | `parallelAsync` | `Async<'T>` | Applicative-style parallel execution of multiple asyncs |
+> | `asyncEx` | `Async<'T>` | Enhanced async: supports `IAsyncDisposable`, awaits Tasks/ValueTasks directly, unwraps exceptions (no `AggregateException`), supports `for` over `IAsyncEnumerable` |
+> | `task` / `backgroundTask` | `Task<'T>` | Polyfill fixing F# Task CE quirks |
+>
+> ## When It's Most Useful
+>
+> 1. **Cold/cancellable workflows** — You want explicit control over when work starts, need re-execution, or want cancellation threaded through without extra parameters
+> 2. **Performance-sensitive async** — `ValueTask`/`poolingValueTask` avoid allocations in hot paths
+> 3. **Modern async patterns** — Need `IAsyncDisposable`, `IAsyncEnumerable`, or direct Task/ValueTask awaiting in async workflows
+> 4. **Parallel async** — Run multiple independent async operations concurrently with applicative syntax
+> 5. **Exception handling** — Want Tasks to throw original exceptions instead of wrapped `AggregateException`
+>
+> ## Quick Example
+>
+> ```fsharp
+> open IcedTasks
+>
+> // Lazy + cancellable
+> let downloadData url = cancellableTask {
+>     let! response = HttpClient.GetAsync(url, ct)
+>     return response.Content.ReadAsStringAsync()
+> }
+>
+> // Parallel execution
+> let fetchAll urls = parallelAsync {
+>     let! results = urls |> Seq.map downloadData
+>     return results
+> }
+>
+> // ValueTask for sync-fast path
+> let tryCache key = valueTask {
+>     match Cache.TryGet(key) with
+>     | Some v -> return v
+>     | None -> return! fetchFromDb key
+> }
+> ```
+>
+> Docs: <https://www.jimmybyrd.me/IcedTasks/>
+
+##### After
+
+> # IcedTasks
+>
+> ## Overview
+>
+> IcedTasks is an F# library that provides additional computation expressions for task-based asynchronous programming. It extends the standard F# task computation expression with specialized builders for performance, lazy evaluation, cancellation, and parallel execution.
+>
+> ## Installation
+>
+> Add the NuGet package to your project:
+>
+> ```bash
+> dotnet add package IcedTasks
+> ```
+>
+> Open the namespace in your F# code:
+>
+> ```fsharp
+> open IcedTasks
+> ```
+>
+> ## Computation Expressions
+>
+> ### ValueTask
+>
+> Use `valueTask` for better performance in synchronous scenarios. `ValueTask` is a discriminated union of a value or a task, avoiding allocation when the result is already available.
+>
+> ```fsharp
+> let myValueTask = valueTask {
+>     let! theAnswer = valueTask { return 42 }
+>     return theAnswer
+> }
+> ```
+>
+> ### ColdTask
+>
+> Use `coldTask` for lazy evaluation. The task does not start until you invoke the returned function. This is similar to how F# `Async` works.
+>
+> ```fsharp
+> let coldTask_dont_start_immediately = task {
+>     let mutable someValue = null
+>     let fooColdTask = coldTask { someValue <- 42 }
+>     do! Async.Sleep(100)
+>     // fooColdTask has not executed yet
+>     do! fooColdTask ()
+>     // now someValue = 42
+> }
+> ```
+>
+> ### CancellableTask and CancellableValueTask
+>
+> Use `cancellableTask` or `cancellableValueTask` when you need to flow a `CancellationToken` through the computation. The computation checks cancellation before each bind.
+>
+> Access the token by binding against a function that takes `CancellationToken`:
+>
+> ```fsharp
+> let writeJunkToFile = 
+>     let path = Path.GetTempFileName()
+>     cancellableTask {
+>         let junk = Array.zeroCreate bufferSize
+>         use file = File.Create(path)
+>         for i = 1 to manyIterations do
+>             do! fun ct -> file.WriteAsync(junk, 0, junk.Length, ct)
+>     }
+> ```
+>
+> Or bind against `CancellableTask.getCancellationToken`:
+>
+> ```fsharp
+> let writeJunkToFile = 
+>     let path = Path.GetTempFileName()
+>     cancellableTask {
+>         let junk = Array.zeroCreate bufferSize
+>         use file = File.Create(path)
+>         let! ct = CancellableTask.getCancellationToken ()
+>         for i = 1 to manyIterations do
+>             do! file.WriteAsync(junk, 0, junk.Length, ct)
+>     }
+> ```
+>
+> Execute by passing a token:
+>
+> ```fsharp
+> let executeWriting = task {
+>     use cts = new CancellationTokenSource()
+>     do! writeJunkToFile cts.Token
+> }
+> ```
+>
+> ### ParallelAsync
+>
+> Use `parallelAsync` to execute multiple async operations in parallel using applicative syntax.
+>
+> ```fsharp
+> let getDataFromAFewSites = parallelAsync {
+>     let! result1 = exampleHttpCall "site1"
+>     and! result2 = exampleHttpCall "site2"
+>     and! result3 = exampleHttpCall "site3"
+>     return ()
+> }
+> ```
+>
+> ### AsyncEx
+>
+> Use `asyncEx` for enhanced async semantics:
+>
+> - Supports `use` with `IAsyncDisposable`
+> - Allows `let!`/`do!` against `Task`, `ValueTask`, or any awaitable
+> - Unwraps exceptions from tasks (no `AggregateException`)
+> - Supports `for` loops over `IAsyncEnumerable`
+>
+> ```fsharp
+> let myAsyncEx = asyncEx {
+>     use _ = fakeDisposable ()
+>     let! _ = task { return 42 }
+>     let! _ = valueTask { return 42 }
+>     let! _ = Task.Yield()
+>     let items = taskSeq { yield 42; yield 1701 }
+>     let mutable sum = 0
+>     for i in items do
+>         sum <- sum + i
+>     return sum
+> }
+> ```
+>
+> ### Task Polyfill
+>
+> Use `IcedTasks.Polyfill.Task` to shadow the built-in F# `task` CE with fixes for exception handling and other issues.
+>
+> ```fsharp
+> open IcedTasks.Polyfill.Task
+>
+> let myTask = task {
+>     let! result = someTask
+>     return result
+> }
+> ```
+>
+> ## When to Use Each Builder
+>
+> | Builder | Use Case |
+> |---------|----------|
+> | `valueTask` | Synchronous-heavy code paths; avoid task allocation |
+> | `coldTask` | Deferred execution; re-runnable tasks |
+> | `cancellableTask` | Long-running operations needing cancellation; implicit token flow |
+> | `cancellableValueTask` | Same as `cancellableTask` but with `ValueTask` performance |
+> | `parallelAsync` | Multiple independent async operations that can run concurrently |
+> | `asyncEx` | Need `IAsyncDisposable`, task/ValueTask binding, or `IAsyncEnumerable` |
+> | `task` (polyfill) | Fix F# task CE exception unwrapping |
+>
+> ## Documentation
+>
+> Full documentation is available at: https://www.jimmybyrd.me/IcedTasks/
+>
+> The site includes a [Choosing a builder](https://www.jimmybyrd.me/IcedTasks/Explanations/Choosing-a-builder.html) guide with a comparison table of all builders, aliases, and pooling variants.
+
+##### Observed differences
+
+- The "before" text uses a table with three columns (Expression, Type, Use Case). The "after" text uses separate subsections with full explanations and code samples for each builder.
+- The "after" text structures the installation as a numbered procedure with explicit steps. The "before" text gives a one-line command.
+- The "before" text uses a concise bullet list for "When It's Most Useful" with numbered items and bold labels. The "after" text uses a table mapping each builder to a use case.
+- Both versions include code examples, but the "after" text provides more complete, runnable snippets for each builder.
+- The "after" text removes contractions ("doesn't", "can't") and uses more formal phrasing throughout.
+- The "after" text includes a link to the full documentation site at the end.
+
 ---
 
 ## Example 2: Procedure (publish a NuGet package)
@@ -833,6 +1057,42 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - The "after" text adds a final step that checks the package page.
 - The "before" text adds the manual-approval fact, which the prompt did not state.
 
+#### opencode — nemotron-3-ultra-free (`opencode/nemotron-3-ultra-free`)
+
+##### Before
+
+> To publish a NuGet package:
+>
+> 1. **Create the package** - Run `dotnet pack` in your project directory (or `nuget pack` for .nuspec files)
+> 2. **Test locally** - Install to a local feed: `dotnet add package --source ./nupkg YourPackage`
+> 3. **Get an API key** - Create one at [nuget.org](https://www.nuget.org/account/apikeys)
+> 4. **Push to NuGet** - Run `dotnet nuget push *.nupkg --api-key YOUR_KEY --source https://api.nuget.org/v3/index.json`
+>
+> Optional: Use `dotnet nuget push --skip-duplicate` to avoid errors if version exists.
+
+##### After
+
+> To publish a new package to NuGet:
+>
+> 1. Create a NuGet package from your project.
+> 2. Sign the package if required.
+> 3. Open a terminal.
+> 4. Run `dotnet nuget push <package-file> --source https://api.nuget.org/v3/index.json --api-key <your-api-key>`.
+> 5. Verify the package appears on nuget.org.
+>
+> **Prerequisites:**
+> - A NuGet.org account with an API key.
+> - The .NET SDK installed.
+> - A built project or `.nupkg` file ready.
+
+##### Observed differences
+
+- The "before" text uses bold labels for each step (Create the package, Test locally, Get an API key, Push to NuGet). The "after" text uses plain numbered steps without bold labels.
+- The "after" text splits prerequisites into a separate section at the end. The "before" text includes getting an API key as step 3 in the main sequence.
+- The "before" text includes an optional local testing step and a `--skip-duplicate` flag tip. The "after" text omits these as they were not in the prompt.
+- The "after" text uses "Run" as the verb for the push command, making it a direct instruction. The "before" text says "Run `dotnet nuget push...`" with more parameter detail.
+- The "after" text adds "Verify the package appears on nuget.org" as an explicit final step.
+
 ---
 
 ## Example 3: Error message
@@ -929,6 +1189,23 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - One long sentence with a colon became three short statements: the failed operation, the cause, and the corrective action.
 - The "after" text gives one corrective action ("Correct the file and start the application again"). The "before" text offers two options in one sentence ("Fix or delete the file").
 - Both versions keep the file path and the line number.
+
+#### opencode — nemotron-3-ultra-free (`opencode/nemotron-3-ultra-free`)
+
+##### Before
+
+> Failed to load settings from `%APPDATA%\MyApp\settings.json`: Invalid JSON at line 12.
+
+##### After
+
+> The application cannot load the settings file at `%APPDATA%\MyApp\settings.json`. The file contains invalid JSON at line 12. Correct the JSON syntax at line 12.
+
+##### Observed differences
+
+- The "before" text is one sentence with a colon separating the failure from the cause. The "after" text splits this into three short statements: the failed operation, the cause, and the corrective action.
+- The "before" text uses "Failed to load settings from..." with a colon. The "after" text uses "The application cannot load the settings file at..." as the first statement.
+- The "after" text uses "Correct the JSON syntax at line 12" as a direct imperative instruction. The "before" text does not include a corrective action.
+- Both versions preserve the file path and line number.
 
 ---
 
@@ -1044,6 +1321,30 @@ for (var attempt = 0; attempt < 5; attempt++)
 - The "after" comment states the workaround and its condition ("This loop retries the request because the load is temporary").
 - The removal condition became a direct statement: "Issue #123 adds a rate-limit budget that removes the need for this loop."
 - The "after" comment names the status number only ("a 429 status"); the "before" comment adds the "Too Many Requests" label.
+
+#### opencode — nemotron-3-ultra-free (`opencode/nemotron-3-ultra-free`)
+
+##### Before
+
+```csharp
+// Retries on 429 (Too Many Requests) with exponential backoff.
+// Upstream API returns intermittent 429s during peak load.
+// Issue #123 tracks adding a rate-limit budget to eliminate this retry loop.
+```
+
+##### After
+
+```csharp
+// Retry on 429 (rate limit) during peak load. Issue #123 will replace this with a rate-limit budget.
+```
+
+##### Observed differences
+
+- The "before" text uses three separate comment lines. The "after" text condenses to a single line.
+- The "before" text spells out "Too Many Requests" and mentions "exponential backoff" explicitly. The "after" text abbreviates to "rate limit" and omits the backoff detail.
+- The "before" text says "Issue #123 tracks adding a rate-limit budget to eliminate this retry loop." The "after" text uses the more direct "Issue #123 will replace this with a rate-limit budget."
+- The "after" text removes the period after "load" and uses a single sentence structure.
+- Both versions reference Issue #123 as the removal condition.
 
 ---
 
@@ -1240,6 +1541,54 @@ for (var attempt = 0; attempt < 5; attempt++)
 - The "after" text removes the usage, examples, and "See also" sections, which the prompt did not require.
 - Decorative wording was removed: "a clean set of tables", "its initial, empty state", and the unrelated `db migrate` entry.
 
+#### opencode — nemotron-3-ultra-free (`opencode/nemotron-3-ultra-free`)
+
+##### Before
+
+> ## `db reset`
+>
+> Resets the database to its initial state by deleting all tables and reapplying the initial schema.
+>
+> ### Behavior
+> - Drops all existing tables in the database
+> - Applies the initial schema migrations
+> - **All data is permanently lost** — this operation cannot be undone
+>
+> ### Usage
+> ```bash
+> db reset [flags]
+> ```
+>
+> ### Flags
+> | Flag | Description |
+> |------|-------------|
+> | `--yes`, `-y` | Skip confirmation prompt |
+> | `--force` | Force reset even if database is in use |
+>
+> ### Example
+> ```bash
+> # With confirmation prompt
+> db reset
+>
+> # Non-interactive (CI/CD)
+> db reset --yes
+> ```
+>
+> ### Warning
+> This command destroys all data. Ensure you have backups before running in production environments.
+
+##### After
+
+> The `db reset` command deletes all tables in the database. The command then applies the initial schema. All data in the database is permanently lost.
+
+##### Observed differences
+
+- The "before" text includes a full CLI reference structure with headings (Behavior, Usage, Flags, Example, Warning). The "after" text condenses to three short sentences.
+- The "before" text uses a table for flags and code blocks for usage examples. The "after" text omits these as the prompt only asked for documentation of the command's behavior and data loss fact.
+- The "before" text uses "**All data is permanently lost** — this operation cannot be undone" with em-dash. The "after" text uses "All data in the database is permanently lost" as a separate sentence.
+- The "after" text uses "The command then applies the initial schema" with "The command" as the subject for both actions. The "before" text uses "deleting all tables and reapplying the initial schema" as a participial phrase.
+- The "before" text adds a "Warning" section at the end with backup advice. The "after" text states the data loss fact directly without additional advisory text.
+
 ---
 
 ## Example 6: Changelog entry
@@ -1321,6 +1670,33 @@ for (var attempt = 0; attempt < 5; attempt++)
 - "showed" and "dropped" became "show" and "fell".
 - Both versions keep the cache duration and the performance values.
 
+#### opencode — nemotron-3-ultra-free (`opencode/nemotron-3-ultra-free`)
+
+##### Before
+
+> ## [Unreleased]
+>
+> ### Changed
+> - Cache `/users` endpoint responses for 60 seconds
+>
+> ### Performance
+> - Median response time for `/users` endpoint reduced from 480 ms to 12 ms (per load tests)
+
+##### After
+
+> ### Added
+>
+> - The `/users` endpoint now caches responses for 60 seconds.
+> - Load tests show the median response time decreased from 480 ms to 12 ms.
+
+##### Observed differences
+
+- The "before" text uses a changelog format with "## [Unreleased]" and "### Changed"/"### Performance" headings. The "after" text uses a simpler "### Added" heading with bullet points.
+- The "before" text uses "Cache `/users` endpoint responses for 60 seconds" as an imperative bullet. The "after" text uses "The `/users` endpoint now caches responses for 60 seconds" with an explicit subject and active verb.
+- The "before" text says "reduced from 480 ms to 12 ms (per load tests)" as a fragment. The "after" text says "Load tests show the median response time decreased from 480 ms to 12 ms" as a complete sentence with "Load tests" as the subject.
+- The "before" text uses "ms" abbreviation. The "after" text also uses "ms".
+- Both versions preserve the 60-second cache duration and the 480 ms to 12 ms performance improvement.
+
 ---
 
 ## Example 7: Ambiguous reference in a description
@@ -1396,3 +1772,21 @@ for (var attempt = 0; attempt < 5; attempt++)
 - The "after" text uses "It" as the subject after the first sentence. The "before" text repeats "the proxy" and then introduces "These logs" and "operators".
 - The "after" text addresses the reader directly: "You can use the logs to examine failed requests later."
 - The "before" text adds the inference "to find out what went wrong".
+
+#### opencode — nemotron-3-ultra-free (`opencode/nemotron-3-ultra-free`)
+
+##### Before
+
+> The proxy validates each incoming request, forwards valid requests to the backend service, and logs both the request and response payloads. This logging enables post-hoc analysis of failed requests.
+
+##### After
+
+> The proxy validates the request. The proxy forwards the validated request to the backend. The proxy logs the request and the response. The log lets you examine failed requests.
+
+##### Observed differences
+
+- The "before" text uses a single sentence with multiple clauses joined by commas. The "after" text splits into four short sentences, each with one action.
+- The "before" text uses "forwards valid requests" which adds the condition "valid" that wasn't in the prompt. The "after" text uses "forwards the validated request" which is more precise.
+- The "before" text says "logs both the request and response payloads" while the "after" text says "logs the request and the response" — the "after" text is more concise.
+- The "before" text uses "This logging enables post-hoc analysis of failed requests" as a passive construction. The "after" text uses "The log lets you examine failed requests" with an active verb and direct address to the reader.
+- The "after" text repeats "The proxy" as the subject for the first three sentences, maintaining consistent subject reference. The "before" text shifts from "The proxy" to "This logging" as the subject.
