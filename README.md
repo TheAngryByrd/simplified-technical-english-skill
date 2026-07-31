@@ -99,7 +99,7 @@ Choose the installation scope and harness directory:
 
 Copy the complete `skills/simplified-technical-english` folder into the selected directory.
 
-Use these commands with macOS, Linux, or another POSIX shell:
+From the directory that contains the cloned repository, run these commands in a POSIX shell:
 
 ```sh
 mkdir -p "$HOME/.agents/skills"
@@ -108,7 +108,7 @@ cp -R \
   "$HOME/.agents/skills/"
 ```
 
-Use these commands with Windows PowerShell:
+From the directory that contains the cloned repository, run these commands in Windows PowerShell:
 
 ```powershell
 New-Item -ItemType Directory -Force "$HOME\.agents\skills" | Out-Null
@@ -127,15 +127,51 @@ The final directory must contain this entry point:
 <skill-directory>/simplified-technical-english/SKILL.md
 ```
 
+## Use the skill
+
+Request the skill by name for one task:
+
+```text
+Use the simplified-technical-english skill to review README.md.
+```
+
+Use the skill for other technical text:
+
+```text
+Use the simplified-technical-english skill to rewrite this error message.
+```
+
+For continuous project guidance, add an instruction to the harness project file. For example, add this instruction to `AGENTS.md`:
+
+```markdown
+Use the `simplified-technical-english` skill for technical prose.
+```
+
+List the detected skills after installation:
+
+```text
+npx skills list
+```
+
+The output includes `simplified-technical-english`.
+
 Start a new session if the harness does not detect the skill automatically.
 
-## Provide the specification
+## Optional: provide the specification
+
+The skill does not require the PDF for routine writing and review.
+
+Provide an authorized PDF only when you need a precise source check.
 
 Obtain ASD-STE100 Issue 9 from the [official Issue 9 request page](https://www.asd-ste100.org/STE_downloads.html#article02-2l).
 
-Store your authorized copy at `skills\simplified-technical-english\assets\ASD-STE100-ISSUE-9.pdf`.
+Store your authorized copy at `skills/simplified-technical-english/assets/ASD-STE100-ISSUE-9.pdf`.
 
-The repository ignores PDF files. Do not commit or redistribute the PDF unless you have permission from ASD.
+The repository ignores PDF files.
+
+Do not commit the PDF.
+
+Do not redistribute the PDF unless you have permission from ASD.
 
 Set the PDF path before you request a precise source check:
 
