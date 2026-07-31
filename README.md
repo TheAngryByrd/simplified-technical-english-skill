@@ -27,7 +27,7 @@ Complex sentence structures can also cause confusion. In aerospace, readers must
 
 The standard controls grammar, style, and vocabulary to reduce these sources of confusion.
 
-### How it helps fix LLM word slop
+### How the skill helps fix LLM word slop
 
 Large language models can produce fluent text that is vague, repetitive, or longer than necessary. This output is often called word slop.
 
@@ -70,7 +70,7 @@ npx skills add TheAngryByrd/simplified-technical-english-skill
 
 The command works with Windows, macOS, and Linux. It detects supported agent harnesses and selects their correct directories.
 
-Add `--global` to install the skill for all projects. Add `--copy` when symbolic links are unavailable.
+Add `--global` to install the skill for all projects. When symbolic links are unavailable, add `--copy`.
 
 List the available skill without installing it:
 
@@ -80,7 +80,7 @@ npx skills add TheAngryByrd/simplified-technical-english-skill --list
 
 ### Install manually
 
-Use manual installation when `npx` is unavailable.
+When `npx` is unavailable, use manual installation.
 
 Clone the repository on Windows, macOS, or Linux:
 
