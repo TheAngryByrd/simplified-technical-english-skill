@@ -125,10 +125,10 @@ Do not load or extract the complete source PDF into the context window.
 
 Run these commands from the skill folder:
 
-```powershell
+```text
 uv run scripts/search_issue_9.py "Rule 5.3"
 uv run scripts/search_issue_9.py --word "may"
-uv run scripts/search_issue_9.py --pdf .\assets\ASD-STE100-ISSUE-9.pdf "Rule 5.3"
+uv run scripts/search_issue_9.py --pdf ./assets/ASD-STE100-ISSUE-9.pdf "Rule 5.3"
 ```
 
 Do not claim complete ASD-STE100 compliance without a complete review.

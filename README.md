@@ -23,23 +23,80 @@ The repository does not include the ASD-STE100 specification.
 
 ## Install the skill
 
-Clone the repository:
+This repository follows the [Agent Skills specification](https://agentskills.io/specification).
 
-```powershell
+The same skill folder works with Codex, Claude Code, OpenCode, and other compatible agent harnesses.
+
+### Install with the Skills CLI
+
+Use the [Vercel Skills CLI](https://github.com/vercel-labs/skills) for automatic agent detection and installation:
+
+The current CLI requires Node.js `22.20.0` or newer.
+
+```text
+npx skills add TheAngryByrd/simplified-technical-english-skill
+```
+
+The command works with Windows, macOS, and Linux. It detects supported agent harnesses and selects their correct directories.
+
+Add `--global` to install the skill for all projects. Add `--copy` when symbolic links are unavailable.
+
+List the available skill without installing it:
+
+```text
+npx skills add TheAngryByrd/simplified-technical-english-skill --list
+```
+
+### Install manually
+
+Use manual installation when `npx` is unavailable.
+
+Clone the repository on Windows, macOS, or Linux:
+
+```text
 git clone https://github.com/TheAngryByrd/simplified-technical-english-skill.git
 ```
 
-Copy the skill into your shared agent skill folder:
+Choose the installation scope and harness directory:
+
+| Harness | User directory | Project directory |
+|---|---|---|
+| [Codex](https://learn.chatgpt.com/docs/build-skills) | `~/.agents/skills` | `.agents/skills` |
+| [Claude Code](https://code.claude.com/docs/en/skills) | `~/.claude/skills` | `.claude/skills` |
+| [OpenCode](https://opencode.ai/docs/skills/) | `~/.agents/skills` or `~/.config/opencode/skills` | `.agents/skills` or `.opencode/skills` |
+| Other compatible harnesses | Use the configured user skill directory. | Use the configured project skill directory. |
+
+Copy the complete `skills/simplified-technical-english` folder into the selected directory.
+
+Use these commands with macOS, Linux, or another POSIX shell:
+
+```sh
+mkdir -p "$HOME/.agents/skills"
+cp -R \
+  simplified-technical-english-skill/skills/simplified-technical-english \
+  "$HOME/.agents/skills/"
+```
+
+Use these commands with Windows PowerShell:
 
 ```powershell
+New-Item -ItemType Directory -Force "$HOME\.agents\skills" | Out-Null
 Copy-Item -Recurse -Force `
   .\simplified-technical-english-skill\skills\simplified-technical-english `
   "$HOME\.agents\skills\simplified-technical-english"
 ```
 
-For a Codex-only installation, copy the skill into `$HOME\.codex\skills` instead.
+These examples use the shared Codex and OpenCode directory.
 
-Restart the agent after installation.
+For Claude Code, replace `.agents/skills` with `.claude/skills`.
+
+The final directory must contain this entry point:
+
+```text
+<skill-directory>/simplified-technical-english/SKILL.md
+```
+
+Start a new session if the harness does not detect the skill automatically.
 
 ## Provide the specification
 
@@ -50,6 +107,10 @@ Store your authorized copy at `skills\simplified-technical-english\assets\ASD-ST
 The repository ignores PDF files. Do not commit or redistribute the PDF unless you have permission from ASD.
 
 Set the PDF path before you request a precise source check:
+
+```sh
+export ASD_STE100_PDF="$(pwd)/skills/simplified-technical-english/assets/ASD-STE100-ISSUE-9.pdf"
+```
 
 ```powershell
 $env:ASD_STE100_PDF = (Resolve-Path `
@@ -62,22 +123,20 @@ The script declares its Python version and dependency.
 
 Run a bounded rule search:
 
-```powershell
-uv run skills\simplified-technical-english\scripts\search_issue_9.py "Rule 5.3"
+```text
+uv run skills/simplified-technical-english/scripts/search_issue_9.py "Rule 5.3"
 ```
 
 Run a bounded dictionary search:
 
-```powershell
-uv run skills\simplified-technical-english\scripts\search_issue_9.py --word "may"
+```text
+uv run skills/simplified-technical-english/scripts/search_issue_9.py --word "may"
 ```
 
 You can provide the PDF path for one command:
 
-```powershell
-uv run skills\simplified-technical-english\scripts\search_issue_9.py `
-  --pdf .\skills\simplified-technical-english\assets\ASD-STE100-ISSUE-9.pdf `
-  "Rule 5.3"
+```text
+uv run skills/simplified-technical-english/scripts/search_issue_9.py --pdf ./skills/simplified-technical-english/assets/ASD-STE100-ISSUE-9.pdf "Rule 5.3"
 ```
 
 ## Scope
