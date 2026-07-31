@@ -27,6 +27,15 @@ The Codex entries were recorded on 2026-07-31 with Codex sub-agents and GPT-5.6 
 
 The prompts contain no word limits and no style instructions. Both agents received the same instruction to return only the requested text and not edit files.
 
+## How the GitHub Copilot CLI entries were recorded
+
+The GitHub Copilot CLI entries were recorded on 2026-07-31 with the `general-purpose` sub-agent and Claude Sonnet 5 (`claude-sonnet-5`). Two fresh sub-agents received the same prompt:
+
+- The "before" agent received this added instruction: do not use the `simplified-technical-english` skill or any other skill, and do not invoke any skill tool at all.
+- The "after" agent received this added instruction: invoke the `simplified-technical-english` skill first and follow its guidance.
+
+The prompts contain no word limits and no style instructions. Both agents received the same instruction to return only the requested text.
+
 ## How to add an entry for another model
 
 1. Copy the "Other models" template in the example.
@@ -395,6 +404,59 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - Long descriptions became short statements or direct instructions.
 - The allocation guidance became a direct caution to measure the application.
 
+#### GitHub Copilot CLI — Claude Sonnet 5 (`claude-sonnet-5`)
+
+##### Before
+
+> IcedTasks is most useful when F#'s built-in `task {}` or `async {}` is close, but you need better cancellation flow, lazy/cold tasks, `ValueTask`, or richer async interop.
+>
+> Use it like this:
+>
+> ```fsharp
+> #r "nuget: IcedTasks"
+> open IcedTasks
+> ```
+>
+> Then pick the builder that matches your need:
+>
+> ```fsharp
+> let work =
+>     cancellableTask {
+>         let! ct = CancellableTask.getCancellationToken ()
+>         do! Task.Delay(100, ct)
+>         return 42
+>     }
+> ```
+>
+> Common choices:
+> - `valueTask` / `poolingValueTask`: reduce allocations for fast/hot paths
+> - `coldTask`: `unit -> Task<'T>`; work does not start until you call it
+> - `cancellableTask`: automatically thread a `CancellationToken`
+> - `asyncEx`: async-style workflows with better `Task`/`ValueTask`/`IAsyncEnumerable` interop
+> - `parallelAsync`: run multiple `Async` operations in parallel with `and!`
+>
+> In short: use IcedTasks when you want task-based performance and interop, but still want the nicer control-flow patterns F# developers often like from `async`.
+
+##### After
+
+> Install the `IcedTasks` NuGet package, then `open IcedTasks` in your F# code.
+>
+> Use the builder that matches your async work:
+> - `task` for normal hot `Task<'T>` work
+> - `valueTask` when work often finishes synchronously
+> - `coldTask` when the caller must start the work later
+> - `cancellableTask` or `cancellableValueTask` when cancellation is part of the API
+> - `asyncEx` for F# `Async` semantics with better `Task`, `ValueTask`, `IAsyncDisposable`, and `IAsyncEnumerable` interop
+> - `parallelAsync` to run multiple `Async<'T>` operations together with `and!`
+>
+> IcedTasks is most useful when the built-in F# builders do not give the task shape, cancellation flow, or interop behavior that your API needs.
+
+##### Observed differences
+
+- The "before" text closes with a soft summary ("In short: use IcedTasks when you want..."). The "after" text closes with one direct sentence stating the condition for use.
+- The "after" text drops the code sample entirely and states install/usage as short instructions instead of a runnable snippet plus narrative.
+- Each "after" bullet names one builder and one condition. The "before" bullets mix a builder name with an open-ended description ("richer async interop").
+
 <!-- Copy this block for each additional harness and model. -->
 
 #### Harness — Model (`model-id`)
@@ -618,6 +680,40 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - The API key becomes a scoped API key.
 - The final verification is split into two explicit actions.
 
+#### GitHub Copilot CLI — Claude Sonnet 5 (`claude-sonnet-5`)
+
+##### Before
+
+> 1. Create a NuGet account and add your API key from nuget.org.
+> 2. Update the package metadata in your project file (`PackageId`, `Version`, `Authors`, `Description`, etc.).
+> 3. Build and pack the project:
+>    `dotnet pack -c Release`
+> 4. Verify the `.nupkg` file in the output folder.
+> 5. Publish the package:
+>    `dotnet nuget push bin\Release\YourPackage.<version>.nupkg --api-key <YOUR_API_KEY> --source https://api.nuget.org/v3/index.json`
+> 6. Confirm the package appears on NuGet.org.
+> 7. For later releases, increment the version and repeat.
+
+##### After
+
+> 1. Create a NuGet.org account, if you do not have one.
+>
+> 2. Create an API key in your NuGet.org account.
+>
+> 3. Set the package ID, version, authors, and description in the project file.
+>
+> 4. Build the package with `dotnet pack -c Release`.
+>
+> 5. Publish the `.nupkg` file with `dotnet nuget push <package-file> --api-key <key> --source https://api.nuget.org/v3/index.json`.
+>
+> 6. Verify that the package appears on NuGet.org and that the version is correct.
+
+##### Observed differences
+
+- The "after" text splits account creation and API key creation into two separate steps instead of combining them in step 1.
+- Step 4's build-and-pack combination in the "before" text becomes one build step in the "after" text.
+- The closing step changed from an open-ended "repeat for later releases" to a concrete verification of package presence and version.
+
 <!-- Copy this block for each additional harness and model. -->
 
 #### Harness — Model (`model-id`)
@@ -690,6 +786,30 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - The "after" text names the application, the failed operation, and the cause.
 - "Please correct the malformed JSON and restart the application" became the direct instruction "Correct the JSON, and try again."
 - The "after" text does not use the abstract phrase "settings configuration file."
+
+#### GitHub Copilot CLI — Claude Sonnet 5 (`claude-sonnet-5`)
+
+##### Before
+
+> Failed to load settings file:
+> %APPDATA%\MyApp\settings.json
+>
+> The file contains invalid JSON syntax at line 12. Fix the syntax error, or delete the file to restore default settings, then restart MyApp.
+
+##### After
+
+> Error: The application cannot read the settings file.
+>
+> File: %APPDATA%\MyApp\settings.json
+> Problem: The file has invalid JSON data at line 12.
+>
+> Corrective action: Open the file and correct the JSON data at line 12. Then restart the application. If the problem stays, delete the file. The application will make a new settings file with default values.
+
+##### Observed differences
+
+- The "after" text labels each part of the message: "Error", "File", "Problem", "Corrective action". The "before" text runs the same information together in two sentences.
+- The "before" text offers "fix the error, or delete the file" as one combined instruction. The "after" text orders the same two options as sequential steps: fix first, delete only if the problem stays.
+- "Restore default settings" (before) and "make a new settings file with default values" (after) describe the same outcome; the "after" phrasing states the mechanism (a new file) rather than the abstract "restore."
 
 <!-- Copy this block for each additional harness and model. -->
 
@@ -772,6 +892,30 @@ for (var attempt = 0; attempt < 5; attempt++)
 - The passive removal statement became a direct instruction.
 - "This workaround" became the more precise term "this retry loop."
 - Both versions preserve the cause and the removal condition.
+
+#### GitHub Copilot CLI — Claude Sonnet 5 (`claude-sonnet-5`)
+
+##### Before
+
+```csharp
+// Retries on HTTP 429 (Too Many Requests) with exponential backoff, since the
+// upstream API intermittently rate-limits us during peak load. This loop is a
+// temporary workaround; #123 will add a rate-limit budget to avoid needing it.
+```
+
+##### After
+
+```csharp
+// This loop is a workaround for intermittent 429 responses from the upstream API during peak load.
+// The loop retries the request up to 5 times with exponential backoff.
+// Issue #123 will add a rate-limit budget and remove this loop.
+```
+
+##### Observed differences
+
+- The "before" comment is one long sentence with a semicolon joining the cause and the removal condition. The "after" comment splits the same information into three short sentences.
+- "This loop is a temporary workaround" (before) becomes "This loop is a workaround" (after); "temporary" was redundant with the removal sentence that follows.
+- The retry count ("up to 5 times") is stated explicitly in the "after" text instead of being left implicit in the loop bound.
 
 <!-- Copy this block for each additional harness and model. -->
 
@@ -901,6 +1045,42 @@ Paste the output with the skill.
 - The caution starts with an instruction and then states the result.
 - The "after" text removes the usage block, which the prompt did not require.
 
+#### GitHub Copilot CLI — Claude Sonnet 5 (`claude-sonnet-5`)
+
+##### Before
+
+> ## `db reset`
+>
+> Deletes all tables in the database and then applies the initial schema.
+>
+> ### Usage
+>
+> ```
+> db reset
+> ```
+>
+> ### Description
+>
+> The `db reset` command drops every table in the database, then runs the initial schema to recreate the database structure in its original, empty state.
+>
+> ### Warning
+>
+> **All data in the database is permanently lost when you run this command.** This action cannot be undone. Back up any data you need to keep before you run `db reset`.
+
+##### After
+
+> ## db reset
+>
+> This command deletes all tables in the database. Then, it applies the initial schema to the database.
+>
+> **Warning: This command permanently deletes all data in the database. You cannot recover the data after you run this command.**
+
+##### Observed differences
+
+- The "before" text splits the behavior across a summary line and a separate "Description" section that restates it. The "after" text states the behavior once, in the order the command performs it.
+- "Recreate the database structure in its original, empty state" (before) becomes "applies the initial schema to the database" (after), removing the descriptive phrase "original, empty state" that adds no new fact.
+- The "before" text uses a bolded sentence inside a "Warning" heading plus two more sentences. The "after" text uses one bolded warning with two short sentences and no separate heading.
+
 <!-- Copy this block for each additional harness and model. -->
 
 #### Harness — Model (`model-id`)
@@ -963,6 +1143,23 @@ Paste the output with the skill.
 - "This optimization" became the concrete subject "the median response time."
 - The performance values and cache duration remain unchanged.
 
+#### GitHub Copilot CLI — Claude Sonnet 5 (`claude-sonnet-5`)
+
+##### Before
+
+> ### Added
+> - Responses from the `/users` endpoint are now cached for 60 seconds, reducing median response time from 480 ms to 12 ms in load testing.
+
+##### After
+
+> The system now stores the response from the /users endpoint for 60 seconds. Load tests show that the median response time decreased from 480 milliseconds to 12 milliseconds.
+
+##### Observed differences
+
+- The "before" text is one sentence joining the change and the result with "reducing". The "after" text splits the change and the result into two sentences.
+- "Cached" (before) became "stores" (after) in the change sentence, and "ms" was spelled out as "milliseconds" in both figures.
+- The "before" text omits a stated subject for the caching behavior ("Responses ... are now cached"), passive voice. The "after" text names "The system" as the actor.
+
 <!-- Copy this block for each additional harness and model. -->
 
 #### Harness — Model (`model-id`)
@@ -1020,6 +1217,22 @@ Paste the output with the skill.
 - Each "after" sentence names the proxy as the subject.
 - The "after" text preserves the project terms "validates," "backend," and "logs."
 - The "after" text removes redundant phrases such as "performing validation to ensure that each request is valid."
+
+#### GitHub Copilot CLI — Claude Sonnet 5 (`claude-sonnet-5`)
+
+##### Before
+
+> When the proxy receives a request, it first validates the request to confirm it is well-formed and permitted. It then forwards the validated request to the backend for processing. Throughout this exchange, the proxy logs both the outgoing request and the resulting response, creating a record that allows failed requests to be examined later during troubleshooting.
+
+##### After
+
+> The proxy receives the request and validates it. The proxy then records the request in the log. The proxy sends the request to the backend and receives the response from the backend. The proxy records the response in the log. The log lets you examine failed requests later.
+
+##### Observed differences
+
+- Three long sentences with subordinate clauses ("to confirm it is well-formed and permitted", "creating a record that allows...") became five short sentences, each with the proxy or the log as the subject.
+- The "before" text adds an unstated inference: the request must be "well-formed and permitted." The prompt states only that the proxy "validates the request." The "after" text keeps the supplied verb "validates" without adding the extra qualifiers.
+- The "after" text logs the request immediately after validation and logs the response immediately after the backend reply, matching the order these events occur; the "before" text describes both log writes as happening generically "throughout this exchange."
 
 <!-- Copy this block for each additional harness and model. -->
 
