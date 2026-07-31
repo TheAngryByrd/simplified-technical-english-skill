@@ -17,19 +17,34 @@ It supports these text types:
 
 ## Why this skill is useful
 
-Technical content can be accurate and still be difficult to follow. This skill gives agents a repeatable process for writing clearer text.
+### Why ASD-STE100 exists
 
-The skill helps teams:
+[ASD-STE100](https://www.asd-ste100.org/STE_downloads.html#article02-2l) is a controlled natural language and an international standard for technical documentation.
 
-- Put conditions and prerequisites before dependent actions.
+Technical readers do not always use English as their native language. Many English words also have multiple meanings and synonyms.
+
+Complex sentence structures can cause more confusion. In aerospace, readers must understand maintenance and operation documents so systems operate safely and correctly.
+
+The standard controls grammar, style, and vocabulary to reduce these sources of confusion.
+
+### How it helps fix LLM word slop
+
+Large language models can produce fluent text that is vague, repetitive, or longer than necessary. This output is often called word slop.
+
+The skill replaces a general clarity request with specific checks:
+
+- Identify the actor, action, object, condition, and expected result.
 - Use one consistent term for each concept.
+- Prefer active voice and direct verbs.
+- Keep each sentence within a defined word limit.
+- Put conditions and prerequisites before dependent actions.
 - Separate instructions, descriptions, notes, and safety information.
-- Keep procedures and descriptions within defined sentence limits.
 - Preserve project terms, identifiers, measurements, and safety limits.
-- Write comments that explain rules and non-obvious constraints.
-- Check exact rules and dictionary entries without loading the complete PDF.
+- Remove ambiguous pronouns, unnecessary synonyms, and hidden actions.
 
-These checks help readers identify the actor, action, object, condition, and expected result.
+These constraints make LLM output easier to review. They do not prove that the output is technically correct.
+
+Project terms and technical accuracy still take priority.
 
 ## Repository structure
 
