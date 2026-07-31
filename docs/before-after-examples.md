@@ -238,9 +238,7 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - The "when useful" list became direct instructions with the pattern "Use X when you must Y".
 - The setup became a numbered procedure.
 
-### Other models
-
-#### Codex — GPT-5.6 (`gpt-5.6-sol`)
+### Codex — GPT-5.6 (`gpt-5.6-sol`)
 
 ##### Before
 
@@ -413,7 +411,7 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - Long descriptions became short statements or direct instructions.
 - The allocation guidance became a direct caution to measure the application.
 
-#### GitHub Copilot CLI — Claude Sonnet 5 (`claude-sonnet-5`)
+### GitHub Copilot CLI — Claude Sonnet 5 (`claude-sonnet-5`)
 
 ##### Before
 
@@ -466,7 +464,7 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - The "after" text drops the code sample entirely and states install/usage as short instructions instead of a runnable snippet plus narrative.
 - Each "after" bullet names one builder and one condition. The "before" bullets mix a builder name with an open-ended description ("richer async interop").
 
-#### opencode — DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`)
+### opencode — DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`)
 
 ##### Before
 
@@ -559,7 +557,7 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - The "when useful" list became a set of "You want to..." conditions instead of bolded labels with descriptions.
 - The "after" text drops contractions ("won't", "doesn't") and casual asides ("cheaper synchronous paths", "parameter pollution").
 
-#### opencode — nemotron-3-ultra-free (`opencode/nemotron-3-ultra-free`)
+### opencode — nemotron-3-ultra-free (`opencode/nemotron-3-ultra-free`)
 
 ##### Before
 
@@ -929,9 +927,7 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - Expected results are explicit: the output folder, the validation time, and the verification step.
 - The version-immutability warning became two plain statements: "A package version is permanent. You cannot push the same version two times."
 
-### Other models
-
-#### Codex — GPT-5.6 (`gpt-5.6-sol`)
+### Codex — GPT-5.6 (`gpt-5.6-sol`)
 
 ##### Before
 
@@ -990,7 +986,7 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - The API key becomes a scoped API key.
 - The final verification is split into two explicit actions.
 
-#### GitHub Copilot CLI — Claude Sonnet 5 (`claude-sonnet-5`)
+### GitHub Copilot CLI — Claude Sonnet 5 (`claude-sonnet-5`)
 
 ##### Before
 
@@ -1024,7 +1020,7 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - Step 4's build-and-pack combination in the "before" text becomes one build step in the "after" text.
 - The closing step changed from an open-ended "repeat for later releases" to a concrete verification of package presence and version.
 
-#### opencode — DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`)
+### opencode — DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`)
 
 ##### Before
 
@@ -1057,7 +1053,7 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - The "after" text adds a final step that checks the package page.
 - The "before" text adds the manual-approval fact, which the prompt did not state.
 
-#### opencode — nemotron-3-ultra-free (`opencode/nemotron-3-ultra-free`)
+### opencode — nemotron-3-ultra-free (`opencode/nemotron-3-ultra-free`)
 
 ##### Before
 
@@ -1131,9 +1127,7 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - The "before" text adds behavior that the prompt did not state: "MyApp will continue with default settings for this session." The skill version contains only the known facts.
 - The passive "will not be saved until the file is fixed" pattern does not appear in the "after" text.
 
-### Other models
-
-#### Codex — GPT-5.6 (`gpt-5.6-sol`)
+### Codex — GPT-5.6 (`gpt-5.6-sol`)
 
 ##### Before
 
@@ -1150,7 +1144,7 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - "Please correct the malformed JSON and restart the application" became the direct instruction "Correct the JSON, and try again."
 - The "after" text does not use the abstract phrase "settings configuration file."
 
-#### GitHub Copilot CLI — Claude Sonnet 5 (`claude-sonnet-5`)
+### GitHub Copilot CLI — Claude Sonnet 5 (`claude-sonnet-5`)
 
 ##### Before
 
@@ -1174,7 +1168,7 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - The "before" text offers "fix the error, or delete the file" as one combined instruction. The "after" text orders the same two options as sequential steps: fix first, delete only if the problem stays.
 - "Restore default settings" (before) and "make a new settings file with default values" (after) describe the same outcome; the "after" phrasing states the mechanism (a new file) rather than the abstract "restore."
 
-#### opencode — DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`)
+### opencode — DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`)
 
 ##### Before
 
@@ -1190,7 +1184,7 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - The "after" text gives one corrective action ("Correct the file and start the application again"). The "before" text offers two options in one sentence ("Fix or delete the file").
 - Both versions keep the file path and the line number.
 
-#### opencode — nemotron-3-ultra-free (`opencode/nemotron-3-ultra-free`)
+### opencode — nemotron-3-ultra-free (`opencode/nemotron-3-ultra-free`)
 
 ##### Before
 
@@ -1248,9 +1242,7 @@ for (var attempt = 0; attempt < 5; attempt++)
 - The removal condition is one direct instruction: "Remove this loop when issue #123 adds a rate-limit budget."
 - The difference is small in this example. The unaided model already wrote a serviceable workaround comment. Select this example only if you want to show a case with a modest change.
 
-### Other models
-
-#### Codex — GPT-5.6 (`gpt-5.6-sol`)
+### Codex — GPT-5.6 (`gpt-5.6-sol`)
 
 ##### Before
 
@@ -1273,7 +1265,7 @@ for (var attempt = 0; attempt < 5; attempt++)
 - "This workaround" became the more precise term "this retry loop."
 - Both versions preserve the cause and the removal condition.
 
-#### GitHub Copilot CLI — Claude Sonnet 5 (`claude-sonnet-5`)
+### GitHub Copilot CLI — Claude Sonnet 5 (`claude-sonnet-5`)
 
 ##### Before
 
@@ -1297,7 +1289,7 @@ for (var attempt = 0; attempt < 5; attempt++)
 - "This loop is a temporary workaround" (before) becomes "This loop is a workaround" (after); "temporary" was redundant with the removal sentence that follows.
 - The retry count ("up to 5 times") is stated explicitly in the "after" text instead of being left implicit in the loop bound.
 
-#### opencode — DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`)
+### opencode — DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`)
 
 ##### Before
 
@@ -1322,7 +1314,7 @@ for (var attempt = 0; attempt < 5; attempt++)
 - The removal condition became a direct statement: "Issue #123 adds a rate-limit budget that removes the need for this loop."
 - The "after" comment names the status number only ("a 429 status"); the "before" comment adds the "Too Many Requests" label.
 
-#### opencode — nemotron-3-ultra-free (`opencode/nemotron-3-ultra-free`)
+### opencode — nemotron-3-ultra-free (`opencode/nemotron-3-ultra-free`)
 
 ##### Before
 
@@ -1423,9 +1415,7 @@ for (var attempt = 0; attempt < 5; attempt++)
 - Each behavior sentence names the actor: "The command deletes", "The command applies".
 - Decorative wording was removed: "clean, freshly initialized state".
 
-### Other models
-
-#### Codex — GPT-5.6 (`gpt-5.6-sol`)
+### Codex — GPT-5.6 (`gpt-5.6-sol`)
 
 ##### Before
 
@@ -1454,7 +1444,7 @@ for (var attempt = 0; attempt < 5; attempt++)
 - The caution starts with an instruction and then states the result.
 - The "after" text removes the usage block, which the prompt did not require.
 
-#### GitHub Copilot CLI — Claude Sonnet 5 (`claude-sonnet-5`)
+### GitHub Copilot CLI — Claude Sonnet 5 (`claude-sonnet-5`)
 
 ##### Before
 
@@ -1490,7 +1480,7 @@ for (var attempt = 0; attempt < 5; attempt++)
 - "Recreate the database structure in its original, empty state" (before) becomes "applies the initial schema to the database" (after), removing the descriptive phrase "original, empty state" that adds no new fact.
 - The "before" text uses a bolded sentence inside a "Warning" heading plus two more sentences. The "after" text uses one bolded warning with two short sentences and no separate heading.
 
-#### opencode — DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`)
+### opencode — DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`)
 
 ##### Before
 
@@ -1541,7 +1531,7 @@ for (var attempt = 0; attempt < 5; attempt++)
 - The "after" text removes the usage, examples, and "See also" sections, which the prompt did not require.
 - Decorative wording was removed: "a clean set of tables", "its initial, empty state", and the unrelated `db migrate` entry.
 
-#### opencode — nemotron-3-ultra-free (`opencode/nemotron-3-ultra-free`)
+### opencode — nemotron-3-ultra-free (`opencode/nemotron-3-ultra-free`)
 
 ##### Before
 
@@ -1614,9 +1604,7 @@ for (var attempt = 0; attempt < 5; attempt++)
 - The informal "dropped" became the precise verb "decreased".
 - The difference is small in this example, because the prompt already contained the exact facts. Select this example only if you want to show a case with a modest change.
 
-### Other models
-
-#### Codex — GPT-5.6 (`gpt-5.6-sol`)
+### Codex — GPT-5.6 (`gpt-5.6-sol`)
 
 ##### Before
 
@@ -1635,7 +1623,7 @@ for (var attempt = 0; attempt < 5; attempt++)
 - "This optimization" became the concrete subject "the median response time."
 - The performance values and cache duration remain unchanged.
 
-#### GitHub Copilot CLI — Claude Sonnet 5 (`claude-sonnet-5`)
+### GitHub Copilot CLI — Claude Sonnet 5 (`claude-sonnet-5`)
 
 ##### Before
 
@@ -1652,7 +1640,7 @@ for (var attempt = 0; attempt < 5; attempt++)
 - "Cached" (before) became "stores" (after) in the change sentence, and "ms" was spelled out as "milliseconds" in both figures.
 - The "before" text omits a stated subject for the caching behavior ("Responses ... are now cached"), passive voice. The "after" text names "The system" as the actor.
 
-#### opencode — DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`)
+### opencode — DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`)
 
 ##### Before
 
@@ -1670,7 +1658,7 @@ for (var attempt = 0; attempt < 5; attempt++)
 - "showed" and "dropped" became "show" and "fell".
 - Both versions keep the cache duration and the performance values.
 
-#### opencode — nemotron-3-ultra-free (`opencode/nemotron-3-ultra-free`)
+### opencode — nemotron-3-ultra-free (`opencode/nemotron-3-ultra-free`)
 
 ##### Before
 
@@ -1720,9 +1708,7 @@ for (var attempt = 0; attempt < 5; attempt++)
 - The "before" text adds facts that the prompt did not state: rejection of unauthorized requests, a response returned to the client, and an "audit trail". The skill version states only the supplied facts.
 - One regression: "examines each request to make sure that it is correct" is longer and less precise than the source verb "validates". A human editor can keep "validates" as the project term.
 
-### Other models
-
-#### Codex — GPT-5.6 (`gpt-5.6-sol`)
+### Codex — GPT-5.6 (`gpt-5.6-sol`)
 
 ##### Before
 
@@ -1739,7 +1725,7 @@ for (var attempt = 0; attempt < 5; attempt++)
 - The "after" text preserves the project terms "validates," "backend," and "logs."
 - The "after" text removes redundant phrases such as "performing validation to ensure that each request is valid."
 
-#### GitHub Copilot CLI — Claude Sonnet 5 (`claude-sonnet-5`)
+### GitHub Copilot CLI — Claude Sonnet 5 (`claude-sonnet-5`)
 
 ##### Before
 
@@ -1755,7 +1741,7 @@ for (var attempt = 0; attempt < 5; attempt++)
 - The "before" text adds an unstated inference: the request must be "well-formed and permitted." The prompt states only that the proxy "validates the request." The "after" text keeps the supplied verb "validates" without adding the extra qualifiers.
 - The "after" text logs the request immediately after validation and logs the response immediately after the backend reply, matching the order these events occur; the "before" text describes both log writes as happening generically "throughout this exchange."
 
-#### opencode — DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`)
+### opencode — DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`)
 
 ##### Before
 
@@ -1773,7 +1759,7 @@ for (var attempt = 0; attempt < 5; attempt++)
 - The "after" text addresses the reader directly: "You can use the logs to examine failed requests later."
 - The "before" text adds the inference "to find out what went wrong".
 
-#### opencode — nemotron-3-ultra-free (`opencode/nemotron-3-ultra-free`)
+### opencode — nemotron-3-ultra-free (`opencode/nemotron-3-ultra-free`)
 
 ##### Before
 
