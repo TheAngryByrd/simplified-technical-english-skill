@@ -15,7 +15,9 @@ Use ASD-STE100 Issue 9 as the primary controlled-language source. Apply project 
 4. Use one term for each concept.
 5. Draft the smallest complete statement.
 6. Apply the applicable rules in this file.
-7. Review each changed sentence.
+7. Load [the writing-rules reference](references/issue-9-writing-rules.md) for precise rule mapping or a detailed review.
+8. Load [the dictionary reference](references/issue-9-dictionary.md) when vocabulary details are material.
+9. Review each changed sentence.
 
 Completion means that the text:
 
@@ -112,20 +114,21 @@ Rewrite each sentence that fails a check.
 
 Do not load or extract the complete source PDF into the context window.
 
-1. Obtain Issue 9 from an authorized source.
-2. Set `ASD_STE100_PDF` to the local PDF path.
-3. Use this file for routine writing and reviews.
-4. Run the bounded search script when an exact source check is necessary.
-5. Read only the returned excerpt and cited page.
-6. Extract no more than three adjacent PDF pages for one question.
-7. Process separate rule groups during a full audit.
+1. Obtain Issue 9 from the [official Issue 9 request page](https://www.asd-ste100.org/STE_downloads.html#article02-2l).
+2. Save the PDF as `assets/ASD-STE100-ISSUE-9.pdf`.
+3. Set `ASD_STE100_PDF` to the saved PDF path.
+4. Use this file for routine writing and reviews.
+5. Run the bounded search script when an exact source check is necessary.
+6. Read only the returned excerpt and cited page.
+7. Extract no more than three adjacent PDF pages for one question.
+8. Process separate rule groups during a full audit.
 
 Run these commands from the skill folder:
 
 ```powershell
 uv run scripts/search_issue_9.py "Rule 5.3"
 uv run scripts/search_issue_9.py --word "may"
-uv run scripts/search_issue_9.py --pdf "C:\path\to\ASD-STE100-ISSUE-9.pdf" "Rule 5.3"
+uv run scripts/search_issue_9.py --pdf .\assets\ASD-STE100-ISSUE-9.pdf "Rule 5.3"
 ```
 
 Do not claim complete ASD-STE100 compliance without a complete review.

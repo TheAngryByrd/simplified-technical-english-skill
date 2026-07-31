@@ -43,14 +43,17 @@ Restart the agent after installation.
 
 ## Provide the specification
 
-Obtain ASD-STE100 Issue 9 from the [official ASD-STE100 website](https://www.asd-ste100.org/).
+Obtain ASD-STE100 Issue 9 from the [official Issue 9 request page](https://www.asd-ste100.org/STE_downloads.html#article02-2l).
 
-Do not add the PDF to this repository.
+Store your authorized copy at `skills\simplified-technical-english\assets\ASD-STE100-ISSUE-9.pdf`.
 
-Set the local PDF path before you request a precise source check:
+The repository ignores PDF files. Do not commit or redistribute the PDF unless you have permission from ASD.
+
+Set the PDF path before you request a precise source check:
 
 ```powershell
-$env:ASD_STE100_PDF = "C:\path\to\ASD-STE100-ISSUE-9.pdf"
+$env:ASD_STE100_PDF = (Resolve-Path `
+  .\skills\simplified-technical-english\assets\ASD-STE100-ISSUE-9.pdf).Path
 ```
 
 Install `uv` by using the [official installation instructions](https://docs.astral.sh/uv/getting-started/installation/).
@@ -73,7 +76,7 @@ You can provide the PDF path for one command:
 
 ```powershell
 uv run skills\simplified-technical-english\scripts\search_issue_9.py `
-  --pdf "C:\path\to\ASD-STE100-ISSUE-9.pdf" `
+  --pdf .\skills\simplified-technical-english\assets\ASD-STE100-ISSUE-9.pdf `
   "Rule 5.3"
 ```
 
