@@ -36,6 +36,15 @@ The GitHub Copilot CLI entries were recorded on 2026-07-31 with the `general-pur
 
 The prompts contain no word limits and no style instructions. Both agents received the same instruction to return only the requested text.
 
+## How the opencode entries were recorded
+
+The opencode entries were recorded on 2026-07-31 with the `general` sub-agent and DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`). Two fresh sub-agents received the same prompt:
+
+- The "before" agent received this added instruction: do not use the `simplified-technical-english` skill or any other skill, and do not invoke any skill tool.
+- The "after" agent received this added instruction: invoke the `simplified-technical-english` skill first and follow its guidance.
+
+The prompts contain no word limits and no style instructions. Both agents received the same instruction to return only the requested text.
+
 ## How to add an entry for another model
 
 1. Copy the "Other models" template in the example.
@@ -457,21 +466,98 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - The "after" text drops the code sample entirely and states install/usage as short instructions instead of a runnable snippet plus narrative.
 - Each "after" bullet names one builder and one condition. The "before" bullets mix a builder name with an open-ended description ("richer async interop").
 
-<!-- Copy this block for each additional harness and model. -->
-
-#### Harness — Model (`model-id`)
+#### opencode — DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`)
 
 ##### Before
 
-> _Paste the output without the skill._
+> IcedTasks is an F# library that adds computation expressions built on F# 6's Resumable Code, covering gaps in the built-in `task` CE. You install the `IcedTasks` NuGet package and `open IcedTasks`, then use the builders directly.
+>
+> ## How to use it
+>
+> Each builder produces a distinct type alias:
+>
+> - `coldTask` → `ColdTask<'T>` = `unit -> Task<'T>` (lazy task; nothing runs until you call it)
+> - `cancellableTask` → `CancellableTask<'T>` = `CancellationToken -> Task<'T>` (lazy + token-aware)
+> - `valueTask` / `valueTaskUnit` / `poolingValueTask` → `ValueTask<'T>` (cheaper synchronous paths)
+> - `cancellableValueTask` → `CancellationToken -> ValueTask<'T>`
+> - `parallelAsync` → `ParallelAsync<'T>` (runs `and!` branches concurrently)
+> - `asyncEx` → `Async<'T>` with extra features
+> - `taskUnit` / `backgroundTaskUnit` → `Task` (no return value)
+>
+> Typical usage:
+>
+> ```fsharp
+> open IcedTasks
+>
+> // Lazy: won't run until invoked
+> let foo = coldTask { someValue <- 42 }
+> do! foo ()
+>
+> // Cancellable: call with a token
+> do! writeJunkToFile cts.Token
+>
+> // Inside cancellableTask, bind directly to CancellationToken->Task functions
+> cancellableTask {
+>     do! fun ct -> file.WriteAsync(junk, 0, junk.Length, ct)
+> }
+>
+> // Parallel async
+> parallelAsync {
+>     let! a = exampleHttpCall "x"
+>     and! b = exampleHttpCall "y"
+>     return a + b
+> }
+> ```
+>
+> You can also use the polyfill builders under `IcedTasks.Polyfill.Task` / `IcedTasks.Polyfill.Async`, which shadow the standard F# CEs with fixed behavior.
+>
+> ## When it's most useful
+>
+> - **Lazy task execution** — when you need to decide *when* (or whether) a task starts, re-run it, or defer work like `Async` does. `task`/`async` start eagerly; `coldTask` doesn't.
+> - **Cancellation without parameter pollution** — `cancellableTask` flows a `CancellationToken` through the computation, so your functions don't take an explicit token parameter (great for ASP.NET, passing `RequestAborted`).
+> - **ValueTask support** — F# has no built-in `valueTask` CE; use it for hot synchronous paths or when interop requires `ValueTask`.
+> - **Parallel fan-out** — `parallelAsync` runs `Async` blocks concurrently with `and!`, useful for independent HTTP/IO calls.
+> - **`asyncEx`** — when you need F#'s `async` plus `use` on `IAsyncDisposable`, `let!/do!` against any awaitable (`Task`, `ValueTask`, `YieldAwaitable`), `for` over `IAsyncEnumerable`, and unwrapped (non-`AggregateException`) task exceptions.
+>
+> Choose `cancellableTask` for most cold/cancellable work; add `cancellablePoolingValueTask` or `poolingValueTask` on .NET 6+ when you want pooled allocations. If you just need standard eager tasks, the plain F# `task` CE is fine.
 
 ##### After
 
-> _Paste the output with the skill._
+> ## How to use IcedTasks
+>
+> IcedTasks is an F# library. It provides computation expressions for asynchronous work. These expressions extend the F# task computation expression.
+>
+> **To use the library:**
+>
+> 1. Install the IcedTasks package from NuGet.
+> 2. Add `open IcedTasks` to your F# source file.
+> 3. Select the builder that matches your task.
+>
+> **Main builders:**
+>
+> - `coldTask` starts only when you call it. You can call it again to run it again.
+> - `cancellableTask` and `cancellableValueTask` pass a `CancellationToken` through the computation. You can bind directly against a `CancellationToken -> Task<'T>` function.
+> - `valueTask` and `poolingValueTask` produce `ValueTask` results.
+> - `parallelAsync` runs several `Async` expressions at the same time and waits for all of them.
+> - `asyncEx` works like `Async` but handles `IAsyncDisposable`, `Task`, `ValueTask`, and `IAsyncEnumerable`. It unwraps exceptions so you receive the original exception.
+> - `taskUnit` models a task that has no return value.
+>
+> ## When it is most useful
+>
+> - You want to delay or control when a task starts.
+> - You want to run the same task more than once.
+> - You want to flow a cancellation token without adding a token parameter to each function.
+> - You call .NET APIs that return `ValueTask`.
+> - You want several operations to run in parallel and wait for all results.
+> - You use `Async` together with modern .NET types such as `IAsyncDisposable` and `IAsyncEnumerable`.
 
 ##### Observed differences
 
-- _List the differences that you see between the two versions._
+- The "after" text states the install and usage steps as a numbered procedure with a prerequisite. The "before" text mixes the install into the opening paragraph.
+- The "after" text removes details that the prompt did not ask for, such as the F# 6 resumable-code mechanism and the polyfill builders.
+- Long multi-clause sentences became short single-statement sentences.
+- The "when useful" list became a set of "You want to..." conditions instead of bolded labels with descriptions.
+- The "after" text drops contractions ("won't", "doesn't") and casual asides ("cheaper synchronous paths", "parameter pollution").
 
 ---
 
@@ -714,21 +800,38 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - Step 4's build-and-pack combination in the "before" text becomes one build step in the "after" text.
 - The closing step changed from an open-ended "repeat for later releases" to a concrete verification of package presence and version.
 
-<!-- Copy this block for each additional harness and model. -->
-
-#### Harness — Model (`model-id`)
+#### opencode — DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`)
 
 ##### Before
 
-> _Paste the output without the skill._
+> 1. Build the package: `dotnet pack -c Release` → produces a `.nupkg` file.
+> 2. (Optional) Verify it installs locally: `dotnet add package <Name> --source <local folder>`.
+> 3. Create an API key at nuget.org → Account → API Keys.
+> 4. Push it: `dotnet nuget push bin/Release/My.Package.1.0.0.nupkg -k <API_KEY> -s https://api.nuget.org/v3/index.json`.
+>
+> New packages (and major versions) need manual approval before they appear in search.
 
 ##### After
 
-> _Paste the output with the skill._
+> **Prerequisite**
+>
+> Have a nuget.org account and an API key.
+>
+> **Procedure**
+>
+> 1. Build the project in Release configuration.
+> 2. Create the package. Run the command `dotnet pack`.
+> 3. Publish the package. Run the command `dotnet nuget push`.
+> 4. Add your API key and the package file to the push command.
+> 5. When the push finishes, check the package page on nuget.org.
 
 ##### Observed differences
 
-- _List the differences that you see between the two versions._
+- The "after" text separates the prerequisite (the account and the API key) from the procedure. The "before" text makes the API key one of the steps.
+- Each "after" step is one instruction.
+- The "before" text uses arrows and a parenthetical "(Optional)". The "after" text uses plain statements.
+- The "after" text adds a final step that checks the package page.
+- The "before" text adds the manual-approval fact, which the prompt did not state.
 
 ---
 
@@ -811,21 +914,21 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - The "before" text offers "fix the error, or delete the file" as one combined instruction. The "after" text orders the same two options as sequential steps: fix first, delete only if the problem stays.
 - "Restore default settings" (before) and "make a new settings file with default values" (after) describe the same outcome; the "after" phrasing states the mechanism (a new file) rather than the abstract "restore."
 
-<!-- Copy this block for each additional harness and model. -->
-
-#### Harness — Model (`model-id`)
+#### opencode — DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`)
 
 ##### Before
 
-> _Paste the output without the skill._
+> Unable to load your settings file at `%APPDATA%\MyApp\settings.json`: the file contains invalid JSON at line 12. Fix or delete the file, then try again.
 
 ##### After
 
-> _Paste the output with the skill._
+> Cannot load the settings file at %APPDATA%\MyApp\settings.json. The file has invalid JSON at line 12. Correct the file and start the application again.
 
 ##### Observed differences
 
-- _List the differences that you see between the two versions._
+- One long sentence with a colon became three short statements: the failed operation, the cause, and the corrective action.
+- The "after" text gives one corrective action ("Correct the file and start the application again"). The "before" text offers two options in one sentence ("Fix or delete the file").
+- Both versions keep the file path and the line number.
 
 ---
 
@@ -917,25 +1020,30 @@ for (var attempt = 0; attempt < 5; attempt++)
 - "This loop is a temporary workaround" (before) becomes "This loop is a workaround" (after); "temporary" was redundant with the removal sentence that follows.
 - The retry count ("up to 5 times") is stated explicitly in the "after" text instead of being left implicit in the loop bound.
 
-<!-- Copy this block for each additional harness and model. -->
-
-#### Harness — Model (`model-id`)
+#### opencode — DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`)
 
 ##### Before
 
-```text
-Paste the output without the skill.
+```csharp
+// The upstream API returns 429 (Too Many Requests) responses during peak load.
+// Retry up to 5 times with exponential backoff (2, 4, 8, 16 seconds).
+// Issue #123 tracks a rate-limit budget that will remove the need for this loop.
 ```
 
 ##### After
 
-```text
-Paste the output with the skill.
+```csharp
+// The upstream API returns a 429 status during peak load.
+// This loop retries the request because the load is temporary.
+// Issue #123 adds a rate-limit budget that removes the need for this loop.
 ```
 
 ##### Observed differences
 
-- _List the differences that you see between the two versions._
+- The "after" comment does not restate the code. The "before" comment lists the retry count and the backoff values (2, 4, 8, 16 seconds), which the loop already shows.
+- The "after" comment states the workaround and its condition ("This loop retries the request because the load is temporary").
+- The removal condition became a direct statement: "Issue #123 adds a rate-limit budget that removes the need for this loop."
+- The "after" comment names the status number only ("a 429 status"); the "before" comment adds the "Too Many Requests" label.
 
 ---
 
@@ -1081,21 +1189,56 @@ Paste the output with the skill.
 - "Recreate the database structure in its original, empty state" (before) becomes "applies the initial schema to the database" (after), removing the descriptive phrase "original, empty state" that adds no new fact.
 - The "before" text uses a bolded sentence inside a "Warning" heading plus two more sentences. The "after" text uses one bolded warning with two short sentences and no separate heading.
 
-<!-- Copy this block for each additional harness and model. -->
-
-#### Harness — Model (`model-id`)
+#### opencode — DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`)
 
 ##### Before
 
-> _Paste the output without the skill._
+> ## `db reset`
+>
+> Deletes all tables in the database and then applies the initial schema.
+>
+> **Warning:** This command permanently deletes all data in the database. The data cannot be recovered. Run this command only when you are sure that you want to remove all data.
+>
+> ### Usage
+>
+> ```
+> db reset
+> ```
+>
+> ### Description
+>
+> The `db reset` command performs these steps:
+>
+> 1. Deletes all tables from the database.
+> 2. Applies the initial schema to create a clean set of tables.
+>
+> Use this command to return the database to its initial, empty state.
+>
+> ### Examples
+>
+> Reset the database:
+>
+> ```
+> db reset
+> ```
+>
+> ### See also
+>
+> - `db migrate` — Apply pending schema changes without deleting data.
 
 ##### After
 
-> _Paste the output with the skill._
+> The `db reset` command deletes all tables in the database. The command then applies the initial schema to the database.
+>
+> CAUTION: This command permanently deletes all data in the database. Back up the database before you run this command.
 
 ##### Observed differences
 
-- _List the differences that you see between the two versions._
+- The behavior became two sentences in execution order, each naming the command as the subject.
+- The risk label changed from "Warning" to "CAUTION", because the risk is data damage, not injury.
+- The "after" text states the backup step before the command. The "before" text does not state a backup step.
+- The "after" text removes the usage, examples, and "See also" sections, which the prompt did not require.
+- Decorative wording was removed: "a clean set of tables", "its initial, empty state", and the unrelated `db migrate` entry.
 
 ---
 
@@ -1160,21 +1303,23 @@ Paste the output with the skill.
 - "Cached" (before) became "stores" (after) in the change sentence, and "ms" was spelled out as "milliseconds" in both figures.
 - The "before" text omits a stated subject for the caching behavior ("Responses ... are now cached"), passive voice. The "after" text names "The system" as the actor.
 
-<!-- Copy this block for each additional harness and model. -->
-
-#### Harness — Model (`model-id`)
+#### opencode — DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`)
 
 ##### Before
 
-> _Paste the output without the skill._
+> - Responses from the `/users` endpoint are now cached for 60 seconds.
+> - Load tests showed the median response time dropped from 480 ms to 12 ms.
 
 ##### After
 
-> _Paste the output with the skill._
+> The /users endpoint now caches responses for 60 seconds. Load tests show the median response time fell from 480 ms to 12 ms.
 
 ##### Observed differences
 
-- _List the differences that you see between the two versions._
+- The passive "are now cached" became the active "The /users endpoint now caches responses".
+- The "before" text uses bullets. The "after" text uses two complete sentences.
+- "showed" and "dropped" became "show" and "fell".
+- Both versions keep the cache duration and the performance values.
 
 ---
 
@@ -1234,18 +1379,20 @@ Paste the output with the skill.
 - The "before" text adds an unstated inference: the request must be "well-formed and permitted." The prompt states only that the proxy "validates the request." The "after" text keeps the supplied verb "validates" without adding the extra qualifiers.
 - The "after" text logs the request immediately after validation and logs the response immediately after the backend reply, matching the order these events occur; the "before" text describes both log writes as happening generically "throughout this exchange."
 
-<!-- Copy this block for each additional harness and model. -->
-
-#### Harness — Model (`model-id`)
+#### opencode — DeepSeek V4 Flash Free (`opencode/deepseek-v4-flash-free`)
 
 ##### Before
 
-> _Paste the output without the skill._
+> The proxy validates each request. If the request is valid, the proxy forwards it to the backend. The proxy logs both the request and the response. These logs let operators examine failed requests later to find out what went wrong.
 
 ##### After
 
-> _Paste the output with the skill._
+> The proxy validates the request. It forwards the request to the backend. It logs the request and the response. You can use the logs to examine failed requests later.
 
 ##### Observed differences
 
-- _List the differences that you see between the two versions._
+- Both versions use one action per sentence.
+- The "before" text adds a condition that the prompt did not state ("If the request is valid").
+- The "after" text uses "It" as the subject after the first sentence. The "before" text repeats "the proxy" and then introduces "These logs" and "operators".
+- The "after" text addresses the reader directly: "You can use the logs to examine failed requests later."
+- The "before" text adds the inference "to find out what went wrong".
