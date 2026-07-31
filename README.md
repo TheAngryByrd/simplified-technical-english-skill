@@ -19,7 +19,7 @@ It supports these text types:
 
 ### Why ASD-STE100 exists
 
-[ASD-STE100](https://www.asd-ste100.org/STE_downloads.html#article02-2l) is a controlled natural language and an international standard for technical documentation.
+[ASD-STE100](https://www.asd-ste100.org/STE_downloads.html#article02-2l) is a [controlled natural language](https://en.wikipedia.org/wiki/Controlled_natural_language) and an international standard for technical documentation.
 
 Technical readers do not always use English as their native language. Many English words also have multiple meanings and synonyms.
 
