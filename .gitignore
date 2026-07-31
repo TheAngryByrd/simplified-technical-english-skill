@@ -1,0 +1,5 @@
+# Users must obtain the ASD-STE100 source from an authorized source.
+*.pdf
+.venv/
+__pycache__/
+*.py[cod]

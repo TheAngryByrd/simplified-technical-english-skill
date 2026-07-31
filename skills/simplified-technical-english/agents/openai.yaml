@@ -1,0 +1,4 @@
+interface:
+  display_name: "Simplified Technical English"
+  short_description: "Write clear, consistent technical text"
+  default_prompt: "Use $simplified-technical-english to review this technical text for clarity and consistency."
