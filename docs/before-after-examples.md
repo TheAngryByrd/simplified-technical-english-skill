@@ -18,6 +18,15 @@ The Claude Code entries were recorded on 2026-07-31 with Claude Fable 5 (`claude
 
 The prompts contain no word limits and no style instructions. Both agents received the same instruction to return only the requested text.
 
+## How the Codex entries were recorded
+
+The Codex entries were recorded on 2026-07-31 with Codex sub-agents and GPT-5.6 (`gpt-5.6-sol`). Two fresh sub-agents received the same prompt:
+
+- The "before" agent received this added instruction: do not use the `simplified-technical-english` skill or any other skill.
+- The "after" agent received this added instruction: invoke the `simplified-technical-english` skill first and follow its guidance.
+
+The prompts contain no word limits and no style instructions. Both agents received the same instruction to return only the requested text and not edit files.
+
 ## How to add an entry for another model
 
 1. Copy the "Other models" template in the example.
@@ -213,6 +222,179 @@ Select the examples that show the value of the skill most clearly. Each entry en
 
 ### Other models
 
+#### Codex — GPT-5.6 (`gpt-5.6-sol`)
+
+##### Before
+
+> IcedTasks is an F# library that provides additional computation expressions for task-based asynchronous programming. It builds on the resumable-code support introduced in F# 6 and is useful when the standard `task` and `async` computation expressions do not provide the execution or cancellation semantics you need.
+>
+> Install the package from NuGet:
+>
+> ```bash
+> dotnet add package IcedTasks
+> ```
+>
+> Import it in your F# source file:
+>
+> ```fsharp
+> open IcedTasks
+> ```
+>
+> You can then select a computation expression based on the behavior you need.
+>
+> Use `valueTask` when an operation may complete synchronously and you want to return `ValueTask<'T>`:
+>
+> ```fsharp
+> let getAnswer =
+>     valueTask {
+>         return 42
+>     }
+> ```
+>
+> This can reduce allocations in performance-sensitive code, but `ValueTask` has stricter usage rules than `Task`. It is most appropriate for frequently called library methods where synchronous completion is common and measurements show that task allocation matters.
+>
+> Use `coldTask` when you want to define asynchronous work without starting it immediately:
+>
+> ```fsharp
+> let getAnswer =
+>     coldTask {
+>         return 42
+>     }
+>
+> let resultTask = getAnswer ()
+> ```
+>
+> A `ColdTask<'T>` is an alias for `unit -> Task<'T>`. Calling the function starts the operation. This is useful when you need lazy execution, repeatable operations, or behavior similar to F# `Async<'T>` while still using .NET tasks.
+>
+> Use `cancellableTask` when cancellation should flow through an entire computation:
+>
+> ```fsharp
+> open System.Threading
+>
+> let getAnswer =
+>     cancellableTask {
+>         let! cancellationToken =
+>             CancellableTask.getCancellationToken ()
+>
+>         cancellationToken.ThrowIfCancellationRequested()
+>         return 42
+>     }
+>
+> let resultTask = getAnswer CancellationToken.None
+> ```
+>
+> A `CancellableTask<'T>` is an alias for `CancellationToken -> Task<'T>`. The builder checks cancellation around binds and lets nested operations access the current token. It is particularly useful in ASP.NET request handling, services, file operations, and other workflows where many asynchronous calls need the same cancellation token.
+>
+> Use `cancellableValueTask` when you need both cancellation propagation and `ValueTask<'T>`:
+>
+> ```fsharp
+> let getAnswer =
+>     cancellableValueTask {
+>         return 42
+>     }
+> ```
+>
+> Use `parallelAsync` when several independent `Async<'T>` operations should run concurrently:
+>
+> ```fsharp
+> let loadEverything =
+>     parallelAsync {
+>         let! first = loadFirst ()
+>         and! second = loadSecond ()
+>         and! third = loadThird ()
+>
+>         return first, second, third
+>     }
+> ```
+>
+> The `and!` bindings start independent operations in parallel and wait for all results. This is useful for concurrent HTTP requests, database queries, and other independent I/O operations.
+>
+> Use `asyncEx` when you prefer F# `Async<'T>` semantics but need broader interoperability. It supports awaiting `Task`, `ValueTask`, and other awaitable values, using `IAsyncDisposable`, iterating over `IAsyncEnumerable<'T>`, and unwrapping task exceptions without exposing `AggregateException`:
+>
+> ```fsharp
+> let getAnswer =
+>     asyncEx {
+>         let! value =
+>             task {
+>                 return 42
+>             }
+>
+>         return value
+>     }
+> ```
+>
+> IcedTasks also includes `taskUnit` and `backgroundTaskUnit` for tasks that do not return a value, pooling builders for allocation-sensitive .NET 6 or later code, and polyfills for fixes or capabilities missing from some versions of the standard F# task builder.
+>
+> IcedTasks is most useful when you need one or more of the following:
+>
+> - Lazy task execution
+> - Reusable task-producing workflows
+> - Automatic cancellation-token propagation
+> - `ValueTask<'T>` computation expressions
+> - Parallel composition of `Async<'T>` values
+> - Better interoperability among F# async workflows, .NET tasks, value tasks, async disposables, and async enumerables
+> - Task-builder behavior that is unavailable in the F# version targeted by your project
+>
+> For ordinary asynchronous code, the built-in F# `task` expression is usually sufficient. Use IcedTasks when its explicit execution, cancellation, interoperability, or allocation behavior solves a concrete requirement.
+
+##### After
+
+> ## IcedTasks
+>
+> IcedTasks adds F# computation expressions for specialized asynchronous workflows.
+>
+> Install the NuGet package:
+>
+> ```shell
+> dotnet add package IcedTasks
+> ```
+>
+> Open the namespace:
+>
+> ```fsharp
+> open IcedTasks
+> ```
+>
+> Select a builder that matches the required behavior:
+>
+> | Builder | Use it when |
+> |---|---|
+> | `valueTask` | The operation often completes synchronously, and measurements show fewer allocations. |
+> | `coldTask` | The task must start on demand or run more than once. |
+> | `cancellableTask` | The workflow must pass one `CancellationToken` through all operations. |
+> | `cancellableValueTask` | The workflow needs cancellation and `ValueTask` behavior. |
+> | `parallelAsync` | Independent `Async<'T>` operations must run concurrently. |
+> | `asyncEx` | An async workflow must await tasks, dispose asynchronous resources, or process `IAsyncEnumerable<'T>`. |
+> | `taskUnit` | A task does not return a value. |
+>
+> For example, `coldTask` does not start until you call it:
+>
+> ```fsharp
+> open IcedTasks
+> open System.IO
+>
+> let readFile =
+>     coldTask {
+>         return! File.ReadAllTextAsync("data.txt")
+>     }
+>
+> task {
+>     let! text = readFile ()
+>     printfn "%s" text
+> }
+> ```
+>
+> Use IcedTasks when the standard `task` or `async` expression does not provide the required execution behavior.
+>
+> Do not select `ValueTask` only because it can reduce allocations. Measure the application because `ValueTask` adds usage restrictions and complexity.
+
+##### Observed differences
+
+- The "after" text uses a table to map each builder to one use case.
+- The "after" text removes secondary details and keeps one complete example.
+- Long descriptions became short statements or direct instructions.
+- The allocation guidance became a direct caution to measure the application.
+
 <!-- Copy this block for each additional harness and model. -->
 
 #### Harness — Model (`model-id`)
@@ -377,6 +559,65 @@ Select the examples that show the value of the skill most clearly. Each entry en
 
 ### Other models
 
+#### Codex — GPT-5.6 (`gpt-5.6-sol`)
+
+##### Before
+
+> 1. Update the package version in the project file.
+> 2. Verify the package metadata, including its ID, description, authors, license, and repository URL.
+> 3. Build and test the project in Release configuration:
+>    ```shell
+>    dotnet test --configuration Release
+>    ```
+> 4. Create the NuGet package:
+>    ```shell
+>    dotnet pack --configuration Release
+>    ```
+> 5. Inspect the generated `.nupkg` file in the output directory.
+> 6. Obtain an API key from NuGet.org.
+> 7. Publish the package:
+>    ```shell
+>    dotnet nuget push path/to/package.nupkg --api-key YOUR_API_KEY --source https://api.nuget.org/v3/index.json
+>    ```
+> 8. Confirm that the package appears on NuGet.org and can be restored in a test project.
+
+##### After
+
+> 1. Create a NuGet.org account.
+>
+> 2. Add the required package metadata to the project file.
+>
+> 3. Set `PackageId`, `Version`, `Authors`, `Description`, and repository information.
+>
+> 4. Build and test the project.
+>
+> 5. Create the package:
+>
+> ```console
+> dotnet pack --configuration Release
+> ```
+>
+> 6. Inspect the generated `.nupkg` file and confirm its contents.
+>
+> 7. Create a scoped API key on NuGet.org.
+>
+> 8. Publish the package:
+>
+> ```console
+> dotnet nuget push ./bin/Release/Package.Id.1.2.3.nupkg --api-key <API_KEY> --source https://api.nuget.org/v3/index.json
+> ```
+>
+> 9. Verify the package version on NuGet.org.
+>
+> 10. Install the published package in a test project.
+
+##### Observed differences
+
+- The "after" text adds the NuGet.org account as a prerequisite.
+- Each "after" step contains one instruction.
+- The API key becomes a scoped API key.
+- The final verification is split into two explicit actions.
+
 <!-- Copy this block for each additional harness and model. -->
 
 #### Harness — Model (`model-id`)
@@ -432,6 +673,23 @@ Select the examples that show the value of the skill most clearly. Each entry en
 - The passive "will not be saved until the file is fixed" pattern does not appear in the "after" text.
 
 ### Other models
+
+#### Codex — GPT-5.6 (`gpt-5.6-sol`)
+
+##### Before
+
+> Error: Failed to load the user settings configuration file located at `%APPDATA%\MyApp\settings.json` due to invalid JSON syntax detected on line 12. Please correct the malformed JSON and restart the application.
+
+##### After
+
+> MyApp cannot load `%APPDATA%\MyApp\settings.json`. The file contains invalid JSON at line 12. Correct the JSON, and try again.
+
+##### Observed differences
+
+- One long sentence became three short statements.
+- The "after" text names the application, the failed operation, and the cause.
+- "Please correct the malformed JSON and restart the application" became the direct instruction "Correct the JSON, and try again."
+- The "after" text does not use the abstract phrase "settings configuration file."
 
 <!-- Copy this block for each additional harness and model. -->
 
@@ -491,6 +749,29 @@ for (var attempt = 0; attempt < 5; attempt++)
 - The difference is small in this example. The unaided model already wrote a serviceable workaround comment. Select this example only if you want to show a case with a modest change.
 
 ### Other models
+
+#### Codex — GPT-5.6 (`gpt-5.6-sol`)
+
+##### Before
+
+```csharp
+// Retry requests that receive intermittent 429 responses from the upstream API during peak load.
+// This workaround can be removed after the rate-limit budget tracked in issue #123 is implemented.
+```
+
+##### After
+
+```csharp
+// During peak load, the upstream API intermittently returns 429 responses.
+// Remove this retry loop when Issue #123 adds a rate-limit budget.
+```
+
+##### Observed differences
+
+- The "after" comment states the condition before the result.
+- The passive removal statement became a direct instruction.
+- "This workaround" became the more precise term "this retry loop."
+- Both versions preserve the cause and the removal condition.
 
 <!-- Copy this block for each additional harness and model. -->
 
@@ -591,6 +872,35 @@ Paste the output with the skill.
 
 ### Other models
 
+#### Codex — GPT-5.6 (`gpt-5.6-sol`)
+
+##### Before
+
+> ### `db reset`
+>
+> Deletes every table in the database and then applies the initial schema.
+>
+> ```text
+> db reset
+> ```
+>
+> > **Warning:** This operation permanently deletes all data in the database. The deleted data cannot be recovered.
+
+##### After
+
+> ## `db reset`
+>
+> Deletes all tables in the database. Then, the command applies the initial schema.
+>
+> > **CAUTION:** Make sure that you do not need the database data. The command permanently deletes all data.
+
+##### Observed differences
+
+- The behavior became two sentences in execution order.
+- The safety label changed from "Warning" to "CAUTION" because the risk is data damage, not injury.
+- The caution starts with an instruction and then states the result.
+- The "after" text removes the usage block, which the prompt did not require.
+
 <!-- Copy this block for each additional harness and model. -->
 
 #### Harness — Model (`model-id`)
@@ -634,6 +944,25 @@ Paste the output with the skill.
 
 ### Other models
 
+#### Codex — GPT-5.6 (`gpt-5.6-sol`)
+
+##### Before
+
+> ### Improved `/users` endpoint performance
+>
+> Responses from the `/users` endpoint are now cached for 60 seconds, significantly reducing response times for repeated requests. In load testing, this optimization reduced the median response time from 480 ms to 12 ms.
+
+##### After
+
+> The `/users` endpoint now caches responses for 60 seconds. In load tests, the median response time decreased from 480 ms to 12 ms.
+
+##### Observed differences
+
+- The passive "are now cached" became the active "endpoint now caches."
+- The "after" text removes the unsupported qualifier "significantly."
+- "This optimization" became the concrete subject "the median response time."
+- The performance values and cache duration remain unchanged.
+
 <!-- Copy this block for each additional harness and model. -->
 
 #### Harness — Model (`model-id`)
@@ -674,6 +1003,23 @@ Paste the output with the skill.
 - One regression: "examines each request to make sure that it is correct" is longer and less precise than the source verb "validates". A human editor can keep "validates" as the project term.
 
 ### Other models
+
+#### Codex — GPT-5.6 (`gpt-5.6-sol`)
+
+##### Before
+
+> The proxy handles incoming requests by first performing validation to ensure that each request is valid. Once validation has completed successfully, the proxy forwards the request to the appropriate backend service. Both the original request and the corresponding backend response are logged, providing a record that can be used to investigate failed requests at a later time.
+
+##### After
+
+> The proxy validates each request. The proxy then forwards the request to the backend. The proxy logs the request and response for later failure analysis.
+
+##### Observed differences
+
+- Three long sentences became three short sentences with one action in each sentence.
+- Each "after" sentence names the proxy as the subject.
+- The "after" text preserves the project terms "validates," "backend," and "logs."
+- The "after" text removes redundant phrases such as "performing validation to ensure that each request is valid."
 
 <!-- Copy this block for each additional harness and model. -->
 
