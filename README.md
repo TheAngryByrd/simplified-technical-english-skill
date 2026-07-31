@@ -148,9 +148,21 @@ $env:ASD_STE100_PDF = (Resolve-Path `
   .\skills\simplified-technical-english\assets\ASD-STE100-ISSUE-9.pdf).Path
 ```
 
-Install `uv` by using the [official installation instructions](https://docs.astral.sh/uv/getting-started/installation/).
+### Search the PDF for precise information
 
-The script declares its Python version and dependency.
+The core writing guidance does not require `uv`.
+
+We use `uv` only to run the optional `search_issue_9.py` script. The script searches your local PDF for exact rules and dictionary entries.
+
+The search script uses Python and `pypdf` to read the PDF.
+
+The script declares Python 3.10 or newer and `pypdf` version 5 or 6 in its inline metadata.
+
+`uv` reads this metadata, selects a compatible Python version, and installs `pypdf` in an isolated environment. This process avoids manual environment setup.
+
+`uv` is the documented runner, but it is not required. You can use another Python 3.10 environment that provides a compatible `pypdf` version.
+
+Install `uv` by using the [official installation instructions](https://docs.astral.sh/uv/getting-started/installation/).
 
 Run a bounded rule search:
 
